@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora — PrecifiPro (Mock Interativo)</title>
+  <meta name="description"
+    content="Simulador de precificação inteligente do ARNIX com cálculo de envelopes de segurança.">
+  <link rel="icon" type="image/png" href="img/arnix-sgv.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    @keyframes pageEnter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes numberPulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.03);
+        color: #818cf8;
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes toastSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .main-content {
+      animation: pageEnter 0.35s ease-out;
+    }
+
+    .calc-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .calc-input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .calc-result-section {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .preset-btn {
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      line-height: 1.3;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--accent-purple);
+      background: rgba(124, 58, 237, 0.08);
+      color: var(--accent-purple-light);
+      transform: translateY(-2px);
+    }
+
+    .preset-btn.active {
+      border-color: var(--accent-purple);
+      background: rgba(124, 58, 237, 0.18);
+      color: var(--accent-purple-light);
+      box-shadow: 0 0 14px rgba(124, 58, 237, 0.3);
+    }
+
+    .range-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .range-label strong {
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    /* Cards de Envelopes: 3 colunas perfeitamente alinhadas, sem espaços vazios */
+    .calc-result-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .calc-result-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px 10px;
+      text-align: center;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .calc-result-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .calc-result-card.main-result {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(168, 85, 247, 0.06));
+      border-color: rgba(124, 58, 237, 0.45);
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+    }
+
+    .calc-result-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
+
+    .calc-result-value {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text-primary);
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .calc-result-card.main-result .calc-result-value {
+      color: var(--accent-purple-light);
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 13px;
+      transition: background 0.15s ease;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row .label {
+      color: var(--text-secondary);
+    }
+
+    .breakdown-row .valor {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .breakdown-row .valor.destaque {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-purple-light);
+    }
+
+    .calc-resultado-principal {
+      background: var(--bg-secondary);
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 24px 20px;
+      text-align: center;
+      background-image: radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.2), transparent 75%);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      transition: all 0.25s ease;
+    }
+
+    .calc-resultado-principal:hover {
+      box-shadow: 0 12px 36px rgba(124, 58, 237, 0.2);
+    }
+
+    .valor-final-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .valor-final-numero {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--accent-purple-light);
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      transition: all 0.2s ease;
+    }
+
+    .valor-final-numero.bump {
+      animation: numberPulse 0.3s ease;
+    }
+
+    .valor-hora-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Urgency selector cards */
+    .urgency-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .urgency-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .urgency-card:hover {
+      border-color: var(--accent-purple);
+      background: rgba(124, 58, 237, 0.08);
+    }
+
+    .urgency-card.selected {
+      border-color: var(--accent-purple);
+      background: rgba(124, 58, 237, 0.16);
+      box-shadow: 0 0 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .urgency-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .urgency-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .mock-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e1e2e;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--dash-radius-md, 8px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.25);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      animation: toastSlideUp 0.25s ease-out;
+      pointer-events: none;
+    }
+
+    /* ── Breakpoints Responsivos Mobile ── */
+    @media (max-width: 900px) {
+      .layout {
+        position: static !important;
+        z-index: auto !important;
+        display: block !important;
+      }
+
+      .sidebar-toggle {
+        display: flex !important;
+        position: fixed !important;
+        top: 14px !important;
+        left: 14px !important;
+        width: 42px !important;
+        height: 42px !important;
+        background: #1c1c24 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 10px !important;
+        color: #fff !important;
+        font-size: 20px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 10001 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .sidebar-toggle:hover {
+        background: #272732 !important;
+        border-color: rgba(99, 102, 241, 0.5) !important;
+      }
+
+      .sidebar-backdrop {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.72) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+        z-index: 9999 !important;
+        transition: opacity 0.25s ease !important;
+      }
+
+      .sidebar-backdrop.open {
+        display: block !important;
+      }
+
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 270px !important;
+        max-width: 82vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: #111116 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 12px 0 40px rgba(0, 0, 0, 0.8) !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 10000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: hidden !important;
+      }
+
+      .sidebar.open {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+      }
+
+      body.sidebar-open {
+        overflow: hidden !important;
+        touch-action: none !important;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 72px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-bottom: 32px !important;
+        box-sizing: border-box !important;
+      }
+
+      .calc-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .calc-result-section {
+        position: static;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        position: relative;
+        z-index: 10 !important;
+      }
+
+      .page-header button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .calc-result-cards {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .preset-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .valor-final-numero {
+        font-size: 32px;
+      }
+
+      .calc-resultado-principal {
+        padding: 20px 14px;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .preset-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .urgency-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="dark-mode">
+
+  <!-- Mobile Hamburger Toggle e Backdrop -->
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menu de navegação" aria-expanded="false"
+    onclick="toggleMobileSidebar(event)">☰</button>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
+  <div class="layout">
+    <!-- Sidebar Oficial Idêntica 1:1 Estática -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button type="button" class="sidebar-toggle-hamburger" id="sidebar-collapse-btn"
+          onclick="toggleSidebarCollapse()" aria-label="Alternar barra lateral" title="Recolher / Expandir Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <div class="sidebar-brand">
+          <span class="sidebar-logo-icon"
+            style="display:inline-flex;align-items:center;justify-content:center;background:none;box-shadow:none">
+            <img src="img/arnix-sgv.png" alt="ARNIX Logo"
+              style="height:26px;width:auto;object-fit:contain;display:block">
+          </span>
+          <span class="sidebar-logo-text">PrecifiPro</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <span class="sidebar-section-label">Menu</span>
+
+        <a href="index.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1" />
+              <rect x="14" y="3" width="7" height="5" rx="1" />
+              <rect x="14" y="12" width="7" height="9" rx="1" />
+              <rect x="3" y="16" width="7" height="5" rx="1" />
+            </svg></span>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="clientes.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg></span>
+          <span>Clientes</span>
+        </a>
+
+        <a href="propostas.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+              <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              <path d="M10 9H8" />
+              <path d="M16 13H8" />
+              <path d="M16 17H8" />
+            </svg></span>
+          <span>Propostas</span>
+        </a>
+
+        <a href="calculadora.html" class="sidebar-link active" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <line x1="8" y1="6" x2="16" y2="6" />
+              <line x1="16" y1="14" x2="16" y2="18" />
+              <path d="M16 10h.01" />
+              <path d="M12 10h.01" />
+              <path d="M8 10h.01" />
+              <path d="M12 14h.01" />
+              <path d="M8 14h.01" />
+              <path d="M12 18h.01" />
+              <path d="M8 18h.01" />
+            </svg></span>
+          <span>Calculadora</span>
+          <span class="nav-active-bar"></span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div
+          style="padding:14px 10px; font-size:11px; color:var(--text-muted); border-top:1px solid var(--border-color); text-align:center;">
+          <div style="font-weight:600; color:var(--text-primary); margin-bottom:2px;">Arnix Precific</div>
+          <div>Modo Demo</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content page-animate">
+      <!-- Cabeçalho -->
+      <header class="page-header" style="margin-bottom:24px">
+        <div class="page-header-left">
+          <h1 style="font-size:24px;font-weight:600;color:var(--text-primary);margin:0 0 4px 0">Calculadora de
+            Precificação</h1>
+          <p class="page-subtitle" style="font-size:13px;color:var(--text-muted);margin:0">Cálculo científico de
+            honorários, envelopes de segurança e markup real</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="salvarPropostaMock()">
+          📄 Salvar como Proposta
+        </button>
+      </header>
+
+      <!-- Layout da calculadora -->
+      <div class="calc-layout">
+
+        <!-- Painel de Inputs Interativo -->
+        <div class="calc-input-section">
+
+          <!-- Presets rápidos Interativos -->
+          <div class="card">
+            <div class="section-header" style="margin-bottom:14px">
+              <h2 class="section-title" style="font-size:15px;font-weight:600">⚡ Presets de Projeto</h2>
+              <span style="font-size:12px;color:var(--text-muted)">Clique para testar</span>
+            </div>
+            <div class="preset-grid">
+              <button type="button" class="preset-btn" onclick="applyPreset(30, 120, 40, this)">
+                🎨 Design System<br>
+                <small style="color:var(--text-muted)">30h × R$120</small>
+              </button>
+              <button type="button" class="preset-btn active" onclick="applyPreset(40, 85, 40, this)">
+                ✦ Core Platform<br>
+                <small style="color:var(--text-muted)">40h × R$85</small>
+              </button>
+              <button type="button" class="preset-btn" onclick="applyPreset(80, 130, 35, this)">
+                🌐 Web App SaaS<br>
+                <small style="color:var(--text-muted)">80h × R$130</small>
+              </button>
+              <button type="button" class="preset-btn" onclick="applyPreset(40, 200, 30, this)">
+                🎬 Mídia & Vídeo<br>
+                <small style="color:var(--text-muted)">40h × R$200</small>
+              </button>
+              <button type="button" class="preset-btn" onclick="applyPreset(60, 150, 35, this)">
+                📱 Mobile App<br>
+                <small style="color:var(--text-muted)">60h × R$150</small>
+              </button>
+              <button type="button" class="preset-btn" onclick="applyPreset(50, 160, 40, this)">
+                ⚡ API / Cloud<br>
+                <small style="color:var(--text-muted)">50h × R$160</small>
+              </button>
+            </div>
+          </div>
+
+          <!-- Parâmetros com Sliders Reativos -->
+          <div class="card">
+            <h2 class="section-title" style="font-size:15px;font-weight:600;margin-bottom:20px">⚙️ Parâmetros de Custo &
+              Esforço</h2>
+
+            <!-- Horas estimadas -->
+            <div class="form-group" style="margin-bottom:20px">
+              <div class="range-label">
+                <span>Horas estimadas</span>
+                <strong id="label-horas">40 horas</strong>
+              </div>
+              <input type="range" id="range-horas" min="5" max="200" step="5" value="40" class="form-range"
+                style="width:100%" oninput="recalcMock()">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+                <span>5h</span><span id="slider-sub-horas">40 horas</span><span>200h</span>
+              </div>
+            </div>
+
+            <!-- Valor por hora -->
+            <div class="form-group" style="margin-bottom:20px">
+              <div class="range-label">
+                <span>Custo / Valor por hora técnica</span>
+                <strong id="label-valor-hora">R$ 85,00 / hora</strong>
+              </div>
+              <input type="range" id="range-valor-hora" min="30" max="300" step="5" value="85" class="form-range"
+                style="width:100%" oninput="recalcMock()">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+                <span>R$ 30</span><span id="slider-sub-valor">R$ 85,00</span><span>R$ 300</span>
+              </div>
+            </div>
+
+            <!-- Margem de lucro desejada -->
+            <div class="form-group" style="margin-bottom:20px">
+              <div class="range-label">
+                <span>Margem de Lucro Alvo</span>
+                <strong id="label-margem" style="color:var(--accent-green)">40% de Lucro Real</strong>
+              </div>
+              <input type="range" id="range-margem" min="10" max="60" step="5" value="40" class="form-range"
+                style="width:100%" oninput="recalcMock()">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+                <span>10% (Baixa)</span><span id="slider-sub-margem">40% Recomendado</span><span>60% (Alta)</span>
+              </div>
+            </div>
+
+            <!-- Multiplicador de Urgência Interativo -->
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label"
+                style="display:block;margin-bottom:6px;font-size:13px;color:var(--text-secondary);font-weight:600">
+                ⚡ Prazo de Entrega (Delivery Urgency Multiplier)
+              </label>
+              <div class="urgency-grid">
+                <div class="urgency-card selected" onclick="setUrgency(1.0, this)">
+                  <div class="urgency-title">🟢 Normal</div>
+                  <div class="urgency-desc">+0% Padrão</div>
+                </div>
+                <div class="urgency-card" onclick="setUrgency(1.20, this)">
+                  <div class="urgency-title">🟡 Urgente</div>
+                  <div class="urgency-desc">+20% Taxa</div>
+                </div>
+                <div class="urgency-card" onclick="setUrgency(1.40, this)">
+                  <div class="urgency-title">🔴 Rush</div>
+                  <div class="urgency-desc">+40% Taxa</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custos operacionais diretos -->
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-color)">
+              <div
+                style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted)">
+                <span>Custos operacionais fixos alocados:</span>
+                <strong style="color:var(--text-primary)">R$ 500,00</strong>
+              </div>
+              <div
+                style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted);margin-top:6px">
+                <span>Amortização P&D / Ferramentas:</span>
+                <strong style="color:var(--text-primary)">R$ 200,00</strong>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Painel de Resultados (Sem Espaços Vazios) -->
+        <div class="calc-result-section">
+
+          <!-- Valor final em destaque -->
+          <div class="calc-resultado-principal">
+            <div class="valor-final-label">Valor Final Sugerido</div>
+            <div class="valor-final-numero" id="display-preco-final">R$ 8.854,00</div>
+            <div class="valor-hora-label">
+              Valor efetivo por hora: <strong id="display-hora-efetiva" style="color:var(--text-primary)">R$ 221,35 /
+                h</strong>
+            </div>
+          </div>
+
+          <!-- Cards dos Envelopes: Piso, Ideal e Teto em grade equilibrada de 3 colunas -->
+          <div class="calc-result-cards">
+            <div class="calc-result-card">
+              <div class="calc-result-label">Piso de Segurança</div>
+              <div class="calc-result-value" id="display-piso" style="color:var(--accent-amber)">R$ 5.074,00</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">custo zero margem</div>
+            </div>
+            <div class="calc-result-card main-result">
+              <div class="calc-result-label">Preço Ideal (Alvo)</div>
+              <div class="calc-result-value" id="display-ideal">R$ 8.854,00</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="display-sub-margem">margem líquida
+                40%</div>
+            </div>
+            <div class="calc-result-card">
+              <div class="calc-result-label">Teto de Mercado</div>
+              <div class="calc-result-value" id="display-teto" style="color:var(--accent-purple-light)">R$ 11.068,00
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">precificação premium</div>
+            </div>
+          </div>
+
+          <!-- Breakdown detalhado -->
+          <div class="card">
+            <h2 class="section-title" style="font-size:15px;font-weight:600;margin-bottom:16px">📊 Composição do Preço
+            </h2>
+
+            <div class="breakdown-row">
+              <span class="label" id="lbl-horas-valor">Horas Técnicas (40h × R$ 85,00)</span>
+              <span class="valor" id="display-subtotal-horas">R$ 3.400,00</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="label">Custos Operacionais Alocados</span>
+              <span class="valor">R$ 500,00</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="label">Amortização de P&D / CAC</span>
+              <span class="valor">R$ 350,00</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="label">Taxa de Urgência (Delivery)</span>
+              <span class="valor" id="display-taxa-urgencia" style="color:var(--text-secondary)">R$ 0,00</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="label" id="lbl-margem-pct">Margem Líquida Real (40%)</span>
+              <span class="valor" id="display-lucro-real" style="color:var(--accent-green);font-weight:600">+ R$
+                3.541,60</span>
+            </div>
+            <div class="breakdown-row" style="border-top:1px solid var(--border-color);margin-top:4px;padding-top:12px">
+              <span class="label" style="font-weight:600;color:var(--text-primary)">Preço Final Sugerido</span>
+              <span class="valor destaque" id="display-total-row">R$ 8.854,00</span>
+            </div>
+            <div class="breakdown-row"
+              style="border-top:1px dashed var(--border-color);margin-top:6px;padding-top:10px">
+              <span class="label" style="font-size:12px">Metodologia</span>
+              <span class="valor" style="font-size:12px;color:var(--accent-purple-light);font-weight:500">Envelopes de
+                Segurança ARNIX</span>
+            </div>
+
+            <!-- Indicadores adicionais -->
+            <div
+              style="margin-top:16px;padding:14px;background:var(--bg-tertiary);border-radius:var(--radius-md);border:1px solid var(--border-color)">
+              <div
+                style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:10px;font-weight:600">
+                Indicadores Executivos
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;font-size:13px">
+                  <span style="color:var(--text-secondary)">Lucratividade Real</span>
+                  <strong id="display-indicador-lucro" style="color:var(--accent-green)">40.0% Líquido</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13px">
+                  <span style="color:var(--text-secondary)">Valor/Hora Efetivo</span>
+                  <strong id="display-indicador-hora-efetiva" style="color:var(--text-primary)">R$ 221,35 / h</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ação direta -->
+          <button type="button" class="btn btn-primary" onclick="salvarPropostaMock()"
+            style="width:100%;justify-content:center;padding:12px 18px;font-size:14px">
+            📄 Salvar como Proposta Comercial
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-slot"></div>
+
+  <!-- Script simples de animação e simulação de interface (mock puro, sem backend) -->
+  <script>
+    /* ARNIX Executive Runtime — Proprietary Demonstrative Build (PI Protected) */
+    (function (_0x3b1c, _0x5e2f) {
+      var _0x1a84 = function (_0x4d2a) {
+        var _0x9b11 = atob(_0x4d2a);
+        var _0x2c7e = new Uint8Array(_0x9b11.length);
+        for (var _0x8e31 = 0; _0x8e31 < _0x9b11.length; _0x8e31++) {
+          _0x2c7e[_0x8e31] = _0x9b11.charCodeAt(_0x8e31);
+        }
+        return new TextDecoder().decode(_0x2c7e);
+      };
+      (new Function(_0x1a84('ZnVuY3Rpb24gdG9nZ2xlTW9iaWxlU2lkZWJhcihmb3JjZSkgewogICAgICBjb25zdCBzaWRlYmFyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXInKTsKICAgICAgY29uc3QgYmFja2Ryb3AgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci1iYWNrZHJvcCcpOwogICAgICBjb25zdCB0b2dnbGVCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci10b2dnbGUnKTsKICAgICAgaWYgKCFzaWRlYmFyIHx8ICFiYWNrZHJvcCkgcmV0dXJuOwogICAgICBjb25zdCBpc09wZW4gPSAodHlwZW9mIGZvcmNlID09PSAnYm9vbGVhbicpID8gZm9yY2UgOiAhc2lkZWJhci5jbGFzc0xpc3QuY29udGFpbnMoJ29wZW4nKTsKICAgICAgc2lkZWJhci5jbGFzc0xpc3QudG9nZ2xlKCdvcGVuJywgaXNPcGVuKTsKICAgICAgYmFja2Ryb3AuY2xhc3NMaXN0LnRvZ2dsZSgnb3BlbicsIGlzT3Blbik7CiAgICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LnRvZ2dsZSgnc2lkZWJhci1vcGVuJywgaXNPcGVuKTsKICAgICAgaWYgKHRvZ2dsZUJ0bikgewogICAgICAgIHRvZ2dsZUJ0bi5zZXRBdHRyaWJ1dGUoJ2FyaWEtZXhwYW5kZWQnLCBpc09wZW4pOwogICAgICAgIHRvZ2dsZUJ0bi5pbm5lckhUTUwgPSBpc09wZW4gPyAn4pyVJyA6ICfimLAnOwogICAgICB9CiAgICB9CgogICAgZnVuY3Rpb24gdG9nZ2xlU2lkZWJhckNvbGxhcHNlKCkgewogICAgICBkb2N1bWVudC5ib2R5LmNsYXNzTGlzdC50b2dnbGUoJ2NvbGxhcHNlZCcpOwogICAgfQoKICAgIGZ1bmN0aW9uIGluaXRNb2JpbGVTaWRlYmFyKCkgewogICAgICBjb25zdCB0b2dnbGVCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci10b2dnbGUnKTsKICAgICAgY29uc3Qgc2lkZWJhciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyJyk7CiAgICAgIGNvbnN0IGJhY2tkcm9wID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXItYmFja2Ryb3AnKTsKICAgICAgaWYgKCF0b2dnbGVCdG4gfHwgIXNpZGViYXIgfHwgIWJhY2tkcm9wKSByZXR1cm47CgogICAgICB0b2dnbGVCdG4ub25jbGljayA9IGZ1bmN0aW9uKGUpIHsKICAgICAgICBlLnN0b3BQcm9wYWdhdGlvbigpOwogICAgICAgIHRvZ2dsZU1vYmlsZVNpZGViYXIoKTsKICAgICAgfTsKCiAgICAgIGJhY2tkcm9wLm9uY2xpY2sgPSBmdW5jdGlvbigpIHsKICAgICAgICB0b2dnbGVNb2JpbGVTaWRlYmFyKGZhbHNlKTsKICAgICAgfTsKCiAgICAgIHNpZGViYXIucXVlcnlTZWxlY3RvckFsbCgnLnNpZGViYXItbGluaycpLmZvckVhY2gobGluayA9PiB7CiAgICAgICAgbGluay5vbmNsaWNrID0gZnVuY3Rpb24oKSB7CiAgICAgICAgICB0b2dnbGVNb2JpbGVTaWRlYmFyKGZhbHNlKTsKICAgICAgICB9OwogICAgICB9KTsKICAgIH0KCgogICAgbGV0IGN1cnJlbnRVcmdlbmN5TXVsdGlwbGllciA9IDEuMDsKCiAgICAvLyBNb2JpbGUgSGFtYnVyZ2VyIE1lbnUgSGFuZGxlcgogICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ0RPTUNvbnRlbnRMb2FkZWQnLCAoKSA9PiB7CiAgICAgIGluaXRNb2JpbGVTaWRlYmFyKCk7CiAgICB9KTsKCiAgICBmdW5jdGlvbiBpbml0TW9iaWxlU2lkZWJhcigpIHsKICAgICAgY29uc3QgdG9nZ2xlQnRuID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXItdG9nZ2xlJyk7CiAgICAgIGNvbnN0IHNpZGViYXIgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhcicpOwogICAgICBjb25zdCBiYWNrZHJvcCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyLWJhY2tkcm9wJyk7CiAgICAgIGlmICghdG9nZ2xlQnRuIHx8ICFzaWRlYmFyIHx8ICFiYWNrZHJvcCkgcmV0dXJuOwoKICAgICAgZnVuY3Rpb24gc2V0TWVudVN0YXRlKG9wZW4pIHsKICAgICAgICBzaWRlYmFyLmNsYXNzTGlzdC50b2dnbGUoJ29wZW4nLCBvcGVuKTsKICAgICAgICBiYWNrZHJvcC5jbGFzc0xpc3QudG9nZ2xlKCdvcGVuJywgb3Blbik7CiAgICAgICAgZG9jdW1lbnQuYm9keS5jbGFzc0xpc3QudG9nZ2xlKCdzaWRlYmFyLW9wZW4nLCBvcGVuKTsKICAgICAgICB0b2dnbGVCdG4uc2V0QXR0cmlidXRlKCdhcmlhLWV4cGFuZGVkJywgb3Blbik7CiAgICAgICAgdG9nZ2xlQnRuLmlubmVySFRNTCA9IG9wZW4gPyAn4pyVJyA6ICfimLAnOwogICAgICB9CgogICAgICB0b2dnbGVCdG4uYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCAoZSkgPT4gewogICAgICAgIGUuc3RvcFByb3BhZ2F0aW9uKCk7CiAgICAgICAgY29uc3Qgd2lsbE9wZW4gPSAhc2lkZWJhci5jbGFzc0xpc3QuY29udGFpbnMoJ29wZW4nKTsKICAgICAgICBzZXRNZW51U3RhdGUod2lsbE9wZW4pOwogICAgICB9KTsKCiAgICAgIGJhY2tkcm9wLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgKCkgPT4gewogICAgICAgIHNldE1lbnVTdGF0ZShmYWxzZSk7CiAgICAgIH0pOwoKICAgICAgc2lkZWJhci5xdWVyeVNlbGVjdG9yQWxsKCcuc2lkZWJhci1saW5rJykuZm9yRWFjaChsaW5rID0+IHsKICAgICAgICBsaW5rLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgKCkgPT4gewogICAgICAgICAgc2V0TWVudVN0YXRlKGZhbHNlKTsKICAgICAgICB9KTsKICAgICAgfSk7CiAgICB9CgogICAgZnVuY3Rpb24gZm9ybWF0QlJMKG51bSkgewogICAgICByZXR1cm4gbnVtLnRvTG9jYWxlU3RyaW5nKCdwdC1CUicsIHsgc3R5bGU6ICdjdXJyZW5jeScsIGN1cnJlbmN5OiAnQlJMJyB9KTsKICAgIH0KCiAgICBmdW5jdGlvbiBzZXRVcmdlbmN5KG11bHRpcGxpZXIsIGVsKSB7CiAgICAgIGN1cnJlbnRVcmdlbmN5TXVsdGlwbGllciA9IG11bHRpcGxpZXI7CiAgICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoJy51cmdlbmN5LWNhcmQnKS5mb3JFYWNoKGMgPT4gYy5jbGFzc0xpc3QucmVtb3ZlKCdzZWxlY3RlZCcpKTsKICAgICAgZWwuY2xhc3NMaXN0LmFkZCgnc2VsZWN0ZWQnKTsKICAgICAgcmVjYWxjTW9jaygpOwogICAgICBzaG93VG9hc3QoYE11bHRpcGxpY2Fkb3IgZGUgdXJnw6puY2lhIGFqdXN0YWRvOiAke211bHRpcGxpZXJ9eGApOwogICAgfQoKICAgIGZ1bmN0aW9uIGFwcGx5UHJlc2V0KGhvcmFzLCB2YWxvckhvcmEsIG1hcmdlbSwgYnRuKSB7CiAgICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoJy5wcmVzZXQtYnRuJykuZm9yRWFjaChiID0+IGIuY2xhc3NMaXN0LnJlbW92ZSgnYWN0aXZlJykpOwogICAgICBidG4uY2xhc3NMaXN0LmFkZCgnYWN0aXZlJyk7CgogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmFuZ2UtaG9yYXMnKS52YWx1ZSA9IGhvcmFzOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmFuZ2UtdmFsb3ItaG9yYScpLnZhbHVlID0gdmFsb3JIb3JhOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmFuZ2UtbWFyZ2VtJykudmFsdWUgPSBtYXJnZW07CgogICAgICByZWNhbGNNb2NrKCk7CiAgICAgIHNob3dUb2FzdChgUHJlc2V0IGFwbGljYWRvOiAke2hvcmFzfWggw5cgUiQke3ZhbG9ySG9yYX0vaGApOwogICAgfQoKICAgIGZ1bmN0aW9uIHJlY2FsY01vY2soKSB7CiAgICAgIGNvbnN0IGhvcmFzID0gTnVtYmVyKGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyYW5nZS1ob3JhcycpLnZhbHVlKTsKICAgICAgY29uc3QgdmFsb3JIb3JhID0gTnVtYmVyKGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyYW5nZS12YWxvci1ob3JhJykudmFsdWUpOwogICAgICBjb25zdCBtYXJnZW0gPSBOdW1iZXIoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JhbmdlLW1hcmdlbScpLnZhbHVlKTsKCiAgICAgIC8vIEF0dWFsaXphIGxhYmVscyBkb3Mgc2xpZGVycwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbGFiZWwtaG9yYXMnKS50ZXh0Q29udGVudCA9IGAke2hvcmFzfSBob3Jhc2A7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzbGlkZXItc3ViLWhvcmFzJykudGV4dENvbnRlbnQgPSBgJHtob3Jhc30gaG9yYXNgOwoKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2xhYmVsLXZhbG9yLWhvcmEnKS50ZXh0Q29udGVudCA9IGAke2Zvcm1hdEJSTCh2YWxvckhvcmEpfSAvIGhvcmFgOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2xpZGVyLXN1Yi12YWxvcicpLnRleHRDb250ZW50ID0gZm9ybWF0QlJMKHZhbG9ySG9yYSk7CgogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbGFiZWwtbWFyZ2VtJykudGV4dENvbnRlbnQgPSBgJHttYXJnZW19JSBkZSBMdWNybyBSZWFsYDsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NsaWRlci1zdWItbWFyZ2VtJykudGV4dENvbnRlbnQgPSBgJHttYXJnZW19JSBTZWxlY2lvbmFkb2A7CgogICAgICAvLyBTaW11bGHDp8OjbyBzaW1wbGVzIGUgaWx1c3RyYXRpdmEKICAgICAgY29uc3QgY3VzdG9Ib3JhcyA9IGhvcmFzICogdmFsb3JIb3JhOwogICAgICBjb25zdCBjdXN0b3NGaXhvcyA9IDUwMDsKICAgICAgY29uc3QgYW1vcnRpemFjYW8gPSAzNTA7CiAgICAgIGNvbnN0IGN1c3Rvc1RvdGFpcyA9IGN1c3RvSG9yYXMgKyBjdXN0b3NGaXhvcyArIGFtb3J0aXphY2FvOwoKICAgICAgY29uc3QgZmF0b3JNYXJnZW0gPSAoMSAtIChtYXJnZW0gLyAxMDApKSB8fCAwLjY7CiAgICAgIGxldCBwcmVjb0Jhc2UgPSBNYXRoLnJvdW5kKGN1c3Rvc1RvdGFpcyAvIGZhdG9yTWFyZ2VtKTsKICAgICAgCiAgICAgIGNvbnN0IHRheGFVcmdlbmNpYSA9IE1hdGgucm91bmQocHJlY29CYXNlICogKGN1cnJlbnRVcmdlbmN5TXVsdGlwbGllciAtIDEuMCkpOwogICAgICBjb25zdCBwcmVjb0lkZWFsID0gcHJlY29CYXNlICsgdGF4YVVyZ2VuY2lhOwogICAgICBjb25zdCBwaXNvID0gTWF0aC5yb3VuZChjdXN0b3NUb3RhaXMgKiAxLjEyKTsKICAgICAgY29uc3QgdGV0byA9IE1hdGgucm91bmQocHJlY29JZGVhbCAqIDEuMjUpOwogICAgICBjb25zdCBsdWNyb1JlYWwgPSBNYXRoLnJvdW5kKHByZWNvSWRlYWwgLSBjdXN0b3NUb3RhaXMpOwogICAgICBjb25zdCB2YWxvckhvcmFFZmV0aXZvID0gKHByZWNvSWRlYWwgLyBob3JhcykudG9GaXhlZCgyKTsKCiAgICAgIC8vIEFuaW1hw6fDo28gZGUgcHVsc28gbm8gbsO6bWVybyBwcmluY2lwYWwKICAgICAgY29uc3QgbnVtRWwgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGlzcGxheS1wcmVjby1maW5hbCcpOwogICAgICBudW1FbC5jbGFzc0xpc3QucmVtb3ZlKCdidW1wJyk7CiAgICAgIHZvaWQgbnVtRWwub2Zmc2V0V2lkdGg7CiAgICAgIG51bUVsLmNsYXNzTGlzdC5hZGQoJ2J1bXAnKTsKCiAgICAgIC8vIEF0dWFsaXphIGRpc3BsYXlzCiAgICAgIG51bUVsLnRleHRDb250ZW50ID0gZm9ybWF0QlJMKHByZWNvSWRlYWwpOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGlzcGxheS1ob3JhLWVmZXRpdmEnKS50ZXh0Q29udGVudCA9IGAke2Zvcm1hdEJSTChOdW1iZXIodmFsb3JIb3JhRWZldGl2bykpfSAvIGhgOwoKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2Rpc3BsYXktcGlzbycpLnRleHRDb250ZW50ID0gZm9ybWF0QlJMKHBpc28pOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGlzcGxheS1pZGVhbCcpLnRleHRDb250ZW50ID0gZm9ybWF0QlJMKHByZWNvSWRlYWwpOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGlzcGxheS1zdWItbWFyZ2VtJykudGV4dENvbnRlbnQgPSBgbWFyZ2VtIGzDrXF1aWRhICR7bWFyZ2VtfSVgOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGlzcGxheS10ZXRvJykudGV4dENvbnRlbnQgPSBmb3JtYXRCUkwodGV0byk7CgogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbGJsLWhvcmFzLXZhbG9yJykudGV4dENvbnRlbnQgPSBgSG9yYXMgVMOpY25pY2FzICgke2hvcmFzfWggw5cgJHtmb3JtYXRCUkwodmFsb3JIb3JhKX0pYDsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2Rpc3BsYXktc3VidG90YWwtaG9yYXMnKS50ZXh0Q29udGVudCA9IGZvcm1hdEJSTChjdXN0b0hvcmFzKTsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2Rpc3BsYXktdGF4YS11cmdlbmNpYScpLnRleHRDb250ZW50ID0gZm9ybWF0QlJMKHRheGFVcmdlbmNpYSk7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdsYmwtbWFyZ2VtLXBjdCcpLnRleHRDb250ZW50ID0gYE1hcmdlbSBMw61xdWlkYSBSZWFsICgke21hcmdlbX0lKWA7CiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdkaXNwbGF5LWx1Y3JvLXJlYWwnKS50ZXh0Q29udGVudCA9IGArICR7Zm9ybWF0QlJMKGx1Y3JvUmVhbCl9YDsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2Rpc3BsYXktdG90YWwtcm93JykudGV4dENvbnRlbnQgPSBmb3JtYXRCUkwocHJlY29JZGVhbCk7CgogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGlzcGxheS1pbmRpY2Fkb3ItbHVjcm8nKS50ZXh0Q29udGVudCA9IGAke21hcmdlbX0uMCUgTMOtcXVpZG9gOwogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGlzcGxheS1pbmRpY2Fkb3ItaG9yYS1lZmV0aXZhJykudGV4dENvbnRlbnQgPSBgJHtmb3JtYXRCUkwoTnVtYmVyKHZhbG9ySG9yYUVmZXRpdm8pKX0gLyBoYDsKICAgIH0KCiAgICBmdW5jdGlvbiBzYWx2YXJQcm9wb3N0YU1vY2soKSB7CiAgICAgIHNob3dUb2FzdCgn4pyTIFByb3Bvc3RhIGNvbWVyY2lhbCBnZXJhZGEgY29tIHN1Y2Vzc28gYSBwYXJ0aXIgZGVzdGEgc2ltdWxhw6fDo28hJyk7CiAgICB9CgogICAgZnVuY3Rpb24gc2hvd1RvYXN0KG1zZykgewogICAgICBjb25zdCBzbG90ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RvYXN0LXNsb3QnKTsKICAgICAgY29uc3QgdG9hc3QgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKTsKICAgICAgdG9hc3QuY2xhc3NOYW1lID0gJ21vY2stdG9hc3QnOwogICAgICB0b2FzdC5pbm5lckhUTUwgPSBgPHNwYW4+4pqhPC9zcGFuPjxzcGFuPiR7bXNnfTwvc3Bhbj5gOwogICAgICBzbG90LmFwcGVuZENoaWxkKHRvYXN0KTsKICAgICAgc2V0VGltZW91dCgoKSA9PiB7CiAgICAgICAgdG9hc3Quc3R5bGUudHJhbnNpdGlvbiA9ICdvcGFjaXR5IDAuM3MsIHRyYW5zZm9ybSAwLjNzJzsKICAgICAgICB0b2FzdC5zdHlsZS5vcGFjaXR5ID0gJzAnOwogICAgICAgIHRvYXN0LnN0eWxlLnRyYW5zZm9ybSA9ICd0cmFuc2xhdGVZKDEwcHgpJzsKICAgICAgICBzZXRUaW1lb3V0KCgpID0+IHRvYXN0LnJlbW92ZSgpLCAzMDApOwogICAgICB9LCAyNTAwKTsKICAgIH0KCmlmICh0eXBlb2YgaW5pdE1vYmlsZVNpZGViYXIgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5pbml0TW9iaWxlU2lkZWJhciA9IGluaXRNb2JpbGVTaWRlYmFyOyB9CmlmICh0eXBlb2YgdG9nZ2xlTW9iaWxlU2lkZWJhciAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LnRvZ2dsZU1vYmlsZVNpZGViYXIgPSB0b2dnbGVNb2JpbGVTaWRlYmFyOyB9CmlmICh0eXBlb2YgdG9nZ2xlU2lkZWJhckNvbGxhcHNlICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cudG9nZ2xlU2lkZWJhckNvbGxhcHNlID0gdG9nZ2xlU2lkZWJhckNvbGxhcHNlOyB9CmlmICh0eXBlb2YgZm9ybWF0QlJMICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cuZm9ybWF0QlJMID0gZm9ybWF0QlJMOyB9CmlmICh0eXBlb2Ygc2V0VXJnZW5jeSAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LnNldFVyZ2VuY3kgPSBzZXRVcmdlbmN5OyB9CmlmICh0eXBlb2YgYXBwbHlQcmVzZXQgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5hcHBseVByZXNldCA9IGFwcGx5UHJlc2V0OyB9CmlmICh0eXBlb2YgcmVjYWxjTW9jayAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LnJlY2FsY01vY2sgPSByZWNhbGNNb2NrOyB9CmlmICh0eXBlb2Ygc2FsdmFyUHJvcG9zdGFNb2NrICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cuc2FsdmFyUHJvcG9zdGFNb2NrID0gc2FsdmFyUHJvcG9zdGFNb2NrOyB9CmlmICh0eXBlb2Ygc2hvd1RvYXN0ICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cuc2hvd1RvYXN0ID0gc2hvd1RvYXN0OyB9Cg==')))(_0x3b1c, _0x5e2f);
+    })(window, document);
+  </script>
+</body>
+
+</html>

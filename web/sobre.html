@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARNIX Precific - O Motor de Rentabilidade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-light: #a78bfa;
+            --primary-dark: #7c3aed;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --accent: #c084fc;
+            --bg: #050507;
+            --bg-card: rgba(255, 255, 255, 0.02);
+            --bg-hover: rgba(255, 255, 255, 0.05);
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(255, 255, 255, 0.08);
+            --radius: 24px;
+            --radius-sm: 16px;
+            --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Fundos e Gradientes */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -200px; left: -200px;
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 60%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 40%; right: -300px;
+            width: 900px; height: 900px;
+            background: radial-gradient(circle, rgba(192,132,252,0.08) 0%, transparent 60%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 48px;
+            background: linear-gradient(to bottom, rgba(5,5,7,0.95) 0%, transparent 100%);
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-brand span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .btn-nav {
+            padding: 8px 20px;
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s var(--ease-out);
+        }
+
+        .btn-nav:hover {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 30px -5px var(--primary-glow);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 160px 24px 80px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 100px;
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff 0%, #c084fc 50%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 18px;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .hero-actions {
+            margin-top: 40px;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.4s var(--ease-out);
+            box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px -10px rgba(139, 92, 246, 0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary {
+            padding: 16px 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.4s var(--ease-out);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Section Layout */
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 56px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .section-title span {
+            color: var(--primary-light);
+        }
+
+        /* Value Proposition Grid (O Problema vs A Solução) */
+        .value-prop {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 120px;
+        }
+
+        .value-card {
+            background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 48px;
+            position: relative;
+        }
+
+        .value-card.solution {
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.05);
+        }
+
+        .value-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            margin-bottom: 24px;
+        }
+
+        .value-card.solution h3 {
+            color: var(--primary-light);
+        }
+
+        .value-list {
+            list-style: none;
+        }
+
+        .value-list li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .value-list li::before {
+            content: '×';
+            position: absolute;
+            left: 0; top: 0;
+            color: #ef4444;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .value-card.solution .value-list li::before {
+            content: '✓';
+            color: #10b981;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            margin-bottom: 120px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            background: var(--bg-hover);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-sm);
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .feature-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .feature-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Thesis Section (Para Investidores) */
+        .thesis-section {
+            background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(139,92,246,0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 60px;
+            margin-bottom: 120px;
+        }
+
+        .thesis-content {
+            flex: 1;
+        }
+
+        .thesis-content h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .thesis-content p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            padding-left: 20px;
+            border-left: 2px solid var(--primary);
+        }
+
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--primary-light);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* CTA Comercial Final */
+        .cta-bottom {
+            text-align: center;
+            padding: 80px;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: var(--radius);
+            margin-bottom: 40px;
+        }
+
+        .cta-bottom h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 40px;
+            margin-bottom: 24px;
+        }
+
+        .cta-bottom p {
+            color: var(--text-secondary);
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        /* Responsividade */
+        @media (max-width: 900px) {
+            .value-prop, .thesis-section {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+            .thesis-section { padding: 40px 24px; }
+            .cta-bottom { padding: 40px 24px; }
+            .hero h1 { font-size: 42px; }
+            .navbar { padding: 16px 24px; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">ARNIX <span>Precific</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="ceo.html">Liderança</a></li>
+        </ul>
+        <a href="lg.html" class="btn-nav">Acessar Portal</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>O Motor de Rentabilidade <br>para Operações Escaláveis</h1>
+            <p>A ARNIX Precific é uma plataforma SaaS Enterprise orientada a Inteligência Artificial, projetada para redefinir margens, blindar propostas comerciais e transformar a precificação em uma vantagem competitiva implacável.</p>
+            
+            <div class="hero-actions">
+                <a href="lg.html" class="btn-primary">Ver Demo na Prática</a>
+                <a href="mailto:gprattesceo@orbb.com.br?subject=Interesse Comercial na ARNIX Precific" class="btn-secondary">Falar com Especialista</a>
+            </div>
+        </div>
+
+        <!-- Problema vs Solução -->
+        <div class="value-prop">
+            <div class="value-card">
+                <h3>O Desafio do Mercado</h3>
+                <ul class="value-list">
+                    <li><strong>Hemorragia de Lucros:</strong> Descontos aplicados "no feeling" pelo time de vendas sem visão do custo real e impostos.</li>
+                    <li><strong>Demora Comercial:</strong> Dias para formular uma proposta complexa (custos fixos, variáveis, logística, tributação regional).</li>
+                    <li><strong>Falta de Governança:</strong> O C-Level descobre o prejuízo na DRE do fechamento do trimestre, quando já é tarde.</li>
+                    <li><strong>Dados Silados:</strong> Planilhas frágeis que quebram com atualizações e não escalam junto com a empresa.</li>
+                </ul>
+            </div>
+            
+            <div class="value-card solution">
+                <h3>A Solução ARNIX</h3>
+                <ul class="value-list">
+                    <li><strong>Precificação Cirúrgica (IA):</strong> Algoritmos que cravam a margem líquida real de cada negócio antes do contrato ser fechado.</li>
+                    <li><strong>Agilidade Comercial:</strong> Propostas de alta complexidade tributária geradas e aprovadas em poucos minutos.</li>
+                    <li><strong>Governança em Tempo Real:</strong> Dashboards C-Level que bloqueiam operações abaixo da margem mínima estabelecida.</li>
+                    <li><strong>Integração Escalável:</strong> Arquitetura Cloud SaaS pronta para conectar-se aos maiores ERPs e CRMs do mercado.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <h2 class="section-title">Nossos <span>Pilares de Valor</span></h2>
+        <p class="section-subtitle">Construído não apenas para calcular preços, mas para ser a espinha dorsal financeira das negociações empresariais mais complexas.</p>
+
+        <div class="features-grid">
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Motor Tributário Preditivo</h3>
+                <p class="feature-desc">Nossa arquitetura analisa custos diretos, indiretos e malhas tributárias estaduais para garantir que o lucro bruto projetado seja o lucro líquido no fim do dia.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Workflow de Aprovação (C-Level)</h3>
+                <p class="feature-desc">Crie limites de autonomia para o time de vendas. Propostas que violam margens mínimas caem diretamente na alçada da diretoria para liberação, barrando prejuízos.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Expansão B2B Sem Atrito</h3>
+                <p class="feature-desc">Arquitetura multi-tenant, permitindo expansão internacional e parametrização por filiais. Cresça sua base de clientes sem quebrar a operação financeira.</p>
+            </div>
+
+        </div>
+
+        <!-- Thesis / Investor Section -->
+        <div class="thesis-section">
+            <div class="thesis-content">
+                <h2>Tese de Investimento & Tração</h2>
+                <p>O mercado global de <i>Revenue Management & Pricing Optimization</i> movimenta dezenas de bilhões de dólares anualmente, ainda refém de softwares engessados e planilhas instáveis.</p>
+                <p>A ARNIX Capitaliza essa oportunidade oferecendo um modelo <strong>SaaS B2B altamente escalável e de alto ticket</strong>. Com foco no <i>Mid-Market e Enterprise</i>, entregamos retorno tangível (ROI) no primeiro mês de uso, traduzindo-se em taxas de retenção (NDR) superiores e alto valor de ciclo de vida do cliente (LTV).</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">TAM</div>
+                        <div class="stat-label">Mercado Trilionário em Transformação Digital</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">+15%</div>
+                        <div class="stat-label">Aumento Médio na Margem de Contribuição</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">IA / Cloud</div>
+                        <div class="stat-label">Stack Tecnológico Escalável e Defensável</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">MRR</div>
+                        <div class="stat-label">Modelo de Receita Recorrente e Previsível</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Final -->
+        <div class="cta-bottom">
+            <h2>Pronto para assumir o controle das suas margens?</h2>
+            <p>Junte-se às corporações que já estão revolucionando suas operações financeiras e comerciais com a ARNIX Precific.</p>
+            <div class="hero-actions">
+                <a href="mailto:gprattesceo@orbb.com.br?subject=Solicitação de Parceria/Demonstração - ARNIX" class="btn-primary">Solicitar Proposta Executiva</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

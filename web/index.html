@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Visao geral do seu negocio: faturamento, lucro, margem e inteligencia de precificacao.">
+  <title>Dashboard — PrecifiPro (Mock Interativo)</title>
+  <link rel="icon" type="image/png" href="img/arnix-sgv.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/libs/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --dash-gap: 16px;
+      --dash-radius-sm: 6px;
+      --dash-radius-md: 8px;
+      --dash-radius-lg: 12px;
+      --dash-transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes pageEnter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulseGlow {
+
+      0%,
+      100% {
+        opacity: 0.8;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 8px rgba(52, 199, 89, 0.6));
+      }
+    }
+
+    @keyframes toastSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .main-content {
+      animation: pageEnter 0.35s ease-out;
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .dash-header-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 4px 0;
+    }
+
+    .dash-header-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .dash-header-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .dash-header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .dash-btn {
+      padding: 8px 14px;
+      border-radius: var(--dash-radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--dash-transition);
+      font-weight: 500;
+    }
+
+    .dash-btn:hover {
+      border-color: var(--accent-purple);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .dash-btn-primary {
+      background: var(--accent-purple);
+      color: #fff;
+      border-color: var(--accent-purple);
+    }
+
+    .dash-btn-primary:hover {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    .period-pill-group {
+      display: inline-flex;
+      background: var(--bg-tertiary);
+      padding: 3px;
+      border-radius: var(--dash-radius-sm);
+      border: 1px solid var(--border-color);
+      gap: 2px;
+    }
+
+    .period-pill {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--dash-transition);
+    }
+
+    .period-pill:hover {
+      color: var(--text-primary);
+    }
+
+    .period-pill.active {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+
+    .health-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--dash-radius-lg);
+      margin-bottom: 20px;
+      transition: var(--dash-transition);
+    }
+
+    .health-banner:hover {
+      transform: translateY(-1px);
+    }
+
+    .health-banner--green {
+      background: rgba(52, 199, 89, 0.08);
+      border: 1px solid rgba(52, 199, 89, 0.2);
+    }
+
+    .health-banner__icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      background: rgba(52, 199, 89, 0.15);
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+
+    .health-banner__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .health-banner__desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--dash-gap);
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      padding: 18px;
+      border-radius: var(--dash-radius-lg);
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      position: relative;
+      overflow: hidden;
+      transition: var(--dash-transition);
+      cursor: default;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .metric-card__label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .metric-card__value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1.1;
+      transition: var(--dash-transition);
+    }
+
+    .metric-card__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--dash-radius-sm);
+    }
+
+    .metric-card__badge--up {
+      color: var(--accent-green);
+      background: rgba(52, 199, 89, 0.1);
+    }
+
+    .metric-card__status {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    .dashboard-main-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: var(--dash-gap);
+      margin-bottom: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+      border-radius: var(--dash-radius-lg);
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      transition: var(--dash-transition);
+    }
+
+    .panel:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .panel__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .panel__title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .panel__link {
+      font-size: 12px;
+      color: var(--accent-purple-light);
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .panel__link:hover {
+      text-decoration: underline;
+    }
+
+    .intel-panel {
+      padding: 18px;
+    }
+
+    .intel-panel__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .intel-panel__title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .intel-panel__subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .arnix-banner {
+      padding: 14px;
+      border-radius: var(--dash-radius-md);
+      background: rgba(168, 85, 247, 0.06);
+      border: 1px solid rgba(168, 85, 247, 0.15);
+      margin-bottom: 16px;
+    }
+
+    .arnix-banner__header {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-purple-light);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .arnix-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-primary);
+      padding: 8px 0;
+      border-top: 1px solid var(--border-color);
+      transition: var(--dash-transition);
+    }
+
+    .arnix-row:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .arnix-row:first-child {
+      border-top: none;
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--dash-gap);
+    }
+
+    .list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--dash-radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      margin-bottom: 8px;
+      transition: var(--dash-transition);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .list-row:hover {
+      transform: translateX(3px);
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .list-row__title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .list-row__meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .list-row__value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .badge--green {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-green);
+      background: rgba(52, 199, 89, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .badge--blue {
+      font-size: 11px;
+      font-weight: 600;
+      color: #60a5fa;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .badge--amber {
+      font-size: 11px;
+      font-weight: 600;
+      color: #facc15;
+      background: rgba(234, 179, 8, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Floating Toast Component */
+    .mock-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e1e2e;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--dash-radius-md);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.25);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 99999;
+      animation: toastSlideUp 0.25s ease-out;
+      pointer-events: none;
+    }
+
+    /* ── Mobile Sidebar Drawer & Backdrop Fix ── */
+    @media (max-width: 900px) {
+      .layout {
+        position: static !important;
+        z-index: auto !important;
+        display: block !important;
+      }
+
+      .sidebar-toggle {
+        display: flex !important;
+        position: fixed !important;
+        top: 14px !important;
+        left: 14px !important;
+        width: 42px !important;
+        height: 42px !important;
+        background: #1c1c24 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 10px !important;
+        color: #fff !important;
+        font-size: 20px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 10001 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .sidebar-toggle:hover {
+        background: #272732 !important;
+        border-color: rgba(99, 102, 241, 0.5) !important;
+      }
+
+      .sidebar-backdrop {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.72) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+        z-index: 9999 !important;
+        transition: opacity 0.25s ease !important;
+      }
+
+      .sidebar-backdrop.open {
+        display: block !important;
+      }
+
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 270px !important;
+        max-width: 82vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: #111116 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 12px 0 40px rgba(0, 0, 0, 0.8) !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 10000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: hidden !important;
+      }
+
+      .sidebar.open {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+      }
+
+      body.sidebar-open {
+        overflow: hidden !important;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 72px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-bottom: 32px !important;
+        box-sizing: border-box !important;
+      }
+
+      .lower-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dash-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        position: relative;
+        z-index: 10 !important;
+      }
+
+      .dash-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .period-pill-group {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .period-pill {
+        flex: 1;
+        text-align: center;
+      }
+
+      .dash-btn {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .dashboard-main-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .dash-header-title {
+        font-size: 20px;
+      }
+
+      .metric-card__value {
+        font-size: 24px;
+      }
+
+      .dash-header-actions {
+        flex-direction: column;
+      }
+
+      .dash-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body class="dark-mode">
+
+  <!-- Mobile Hamburger Toggle e Backdrop -->
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menu de navegação" aria-expanded="false"
+    onclick="toggleMobileSidebar(event)">☰</button>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
+  <div class="layout">
+
+    <!-- Sidebar Oficial Idêntica 1:1 Estática -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button type="button" class="sidebar-toggle-hamburger" id="sidebar-collapse-btn"
+          onclick="toggleSidebarCollapse()" aria-label="Alternar barra lateral" title="Recolher / Expandir Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <div class="sidebar-brand">
+          <span class="sidebar-logo-icon"
+            style="display:inline-flex;align-items:center;justify-content:center;background:none;box-shadow:none">
+            <img src="img/arnix-sgv.png" alt="ARNIX Logo"
+              style="height:26px;width:auto;object-fit:contain;display:block">
+          </span>
+          <span class="sidebar-logo-text">PrecifiPro</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <span class="sidebar-section-label">Menu</span>
+
+        <a href="index.html" class="sidebar-link active" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1" />
+              <rect x="14" y="3" width="7" height="5" rx="1" />
+              <rect x="14" y="12" width="7" height="9" rx="1" />
+              <rect x="3" y="16" width="7" height="5" rx="1" />
+            </svg></span>
+          <span>Dashboard</span>
+          <span class="nav-active-bar"></span>
+        </a>
+
+        <a href="clientes.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg></span>
+          <span>Clientes</span>
+        </a>
+
+        <a href="propostas.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+              <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              <path d="M10 9H8" />
+              <path d="M16 13H8" />
+              <path d="M16 17H8" />
+            </svg></span>
+          <span>Propostas</span>
+        </a>
+
+        <a href="calculadora.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <line x1="8" y1="6" x2="16" y2="6" />
+              <line x1="16" y1="14" x2="16" y2="18" />
+              <path d="M16 10h.01" />
+              <path d="M12 10h.01" />
+              <path d="M8 10h.01" />
+              <path d="M12 14h.01" />
+              <path d="M8 14h.01" />
+              <path d="M12 18h.01" />
+              <path d="M8 18h.01" />
+            </svg></span>
+          <span>Calculadora</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div
+          style="padding:14px 10px; font-size:11px; color:var(--text-muted); border-top:1px solid var(--border-color); text-align:center;">
+          <div style="font-weight:600; color:var(--text-primary); margin-bottom:2px;">Arnix Precific</div>
+          <div>Modo Demo</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="conteudo-principal">
+
+      <!-- Header com Filtros de Período Mockados -->
+      <header class="dash-header">
+        <div>
+          <h1 class="dash-header-title">Dashboard Executivo</h1>
+          <p class="dash-header-subtitle">Visão financeira e controle de margem em tempo real</p>
+          <p class="dash-header-meta">
+            <span>● Arnix Precific & Software Ltda • Demonstração para Avaliadores</span>
+          </p>
+        </div>
+        <div class="dash-header-actions">
+          <div class="period-pill-group" role="group" aria-label="Período">
+            <button type="button" class="period-pill" onclick="switchPeriod('30d', this)">30 Dias</button>
+            <button type="button" class="period-pill" onclick="switchPeriod('trimestre', this)">Trimestre</button>
+            <button type="button" class="period-pill active" onclick="switchPeriod('ano', this)">Ano 2026</button>
+          </div>
+          <a href="calculadora.html" class="dash-btn">🧮 Calculadora</a>
+          <a href="propostas.html" class="dash-btn dash-btn-primary">+ Nova Proposta</a>
+        </div>
+      </header>
+
+      <!-- Health Banner com Pulso -->
+      <div id="dashboard-health-banner">
+        <div class="health-banner health-banner--green">
+          <div class="health-banner__icon">🟢</div>
+          <div>
+            <div class="health-banner__title">Operação com Rentabilidade Alta & Saudável</div>
+            <div class="health-banner__desc">Sua margem líquida real consolidada está em <strong
+                id="val-banner-margem">41.2%</strong>, superando os benchmarks de mercado do ecossistema ARNIX.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Grid com Micro-animações e Atualização Visual -->
+      <section class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-card__label">💰 Faturamento Acumulado</div>
+          <div class="metric-card__value" id="metric-receita">R$ 284.600,00</div>
+          <span class="metric-card__badge metric-card__badge--up" id="metric-receita-badge">↑ +22% vs anterior</span>
+          <div class="metric-card__status" id="metric-receita-sub">42 propostas faturadas</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-card__label">📈 Lucro Líquido Real</div>
+          <div class="metric-card__value" id="metric-lucro" style="color:var(--accent-green);">R$ 117.255,00</div>
+          <span class="metric-card__badge metric-card__badge--up">↑ 100% Blindado</span>
+          <div class="metric-card__status">Sem perdas ocultas</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-card__label">🛡️ Margem Média Real</div>
+          <div class="metric-card__value" id="metric-margem">41.2%</div>
+          <span class="metric-card__badge metric-card__badge--up">✦ Benchmark Excelente</span>
+          <div class="metric-card__status">Meta mínima: 30%</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-card__label">🏷️ Ticket Médio</div>
+          <div class="metric-card__value" id="metric-ticket">R$ 8.620,00</div>
+          <span class="metric-card__badge metric-card__badge--up">↑ +14% com Urgência</span>
+          <div class="metric-card__status">18 clientes ativos</div>
+        </div>
+      </section>
+
+      <!-- Main Row: Charts + Intelligence -->
+      <div class="dashboard-main-row">
+
+        <!-- Left: Charts Estáticos com Animação Nativa do Canvas -->
+        <div class="dashboard-left-col" style="display:flex;flex-direction:column;gap:16px;">
+          <section class="panel">
+            <div class="panel__header">
+              <h2 class="panel__title">📈 Evolução da Receita</h2>
+              <span style="font-size:12px; color:var(--accent-green); font-weight:500;">Tração Constante</span>
+            </div>
+            <div style="position:relative;height:200px;width:100%;">
+              <canvas id="chartReceitaMock"></canvas>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__header">
+              <h2 class="panel__title">🎯 Conversão de Propostas no Pipeline</h2>
+              <span style="font-size:12px; color:var(--text-muted);">87.5% Taxa de Fechamento</span>
+            </div>
+            <div
+              style="position:relative;height:180px;width:100%;display:flex;align-items:center;justify-content:center;">
+              <canvas id="chartConversaoMock"></canvas>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right: Intelligence -->
+        <section class="panel intel-panel">
+          <div class="intel-panel__header">
+            <div class="intel-panel__title-group">
+              <h2 class="intel-panel__title">💡 Diagnóstico de Inteligência ARNIX</h2>
+              <div class="intel-panel__subtitle">Cockpit preventivo de riscos e lucros</div>
+            </div>
+          </div>
+
+          <div class="arnix-banner">
+            <div class="arnix-banner__header">
+              <span>●</span>
+              ANÁLISE DE RENTABILIDADE
+            </div>
+            <div class="arnix-row">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="color:var(--accent-green);font-weight:700">✓</span>
+                <span>Serviço Mais Lucrativo:</span>
+              </div>
+              <strong style="color:var(--accent-purple-light)">Consultoria Cloud & FinOps (52%)</strong>
+            </div>
+            <div class="arnix-row">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="color:var(--accent-green);font-weight:700">✓</span>
+                <span>Margem de Segurança Mínima:</span>
+              </div>
+              <strong style="color:var(--accent-green)">Atendida (41.2% vs 30.0%)</strong>
+            </div>
+            <div class="arnix-row">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="color:#facc15;font-weight:700">!</span>
+                <span>Concentração de Receita:</span>
+              </div>
+              <strong style="color:#facc15">34.6% (Nexus FinTech)</strong>
+            </div>
+          </div>
+
+          <div
+            style="padding:14px;background:var(--bg-tertiary);border-radius:var(--dash-radius-md);border:1px solid var(--border-color);margin-bottom:12px">
+            <div
+              style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:8px">
+              Resumo Operacional
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
+              <span style="color:var(--text-secondary)">Horas Técnicas Faturadas</span>
+              <strong>1.280 horas</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
+              <span style="color:var(--text-secondary)">Valor Médio da Hora Efetiva</span>
+              <strong style="color:var(--accent-purple-light)">R$ 222,34 / hora</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
+              <span style="color:var(--text-secondary)">Perdas por Desconto</span>
+              <strong style="color:var(--accent-green)">R$ 0,00 (Blindado)</strong>
+            </div>
+          </div>
+
+          <button type="button" class="dash-btn" style="width:100%;justify-content:center"
+            onclick="showToast('📊 Relatório Executivo consolidado exportado com sucesso!')">
+            📥 Exportar Relatório Executivo
+          </button>
+        </section>
+      </div>
+
+      <!-- Lower Grid: Recent Proposals & Key Clients -->
+      <div class="lower-grid">
+        <section class="panel">
+          <div class="panel__header">
+            <h2 class="panel__title">📄 Últimas Propostas</h2>
+            <a href="propostas.html" class="panel__link">Ver todas →</a>
+          </div>
+          <div class="proposals-list">
+            <a href="propostas.html" class="list-row">
+              <div>
+                <div class="list-row__title">Sistema de Pagamentos Pix 2.0</div>
+                <div class="list-row__meta">Nexus FinTech Brasil • 80h</div>
+              </div>
+              <div style="text-align:right">
+                <div class="list-row__value">R$ 38.500,00</div>
+                <span class="badge--amber">Em Negociação</span>
+              </div>
+            </a>
+            <a href="propostas.html" class="list-row">
+              <div>
+                <div class="list-row__title">Plataforma IoT Telemetria</div>
+                <div class="list-row__meta">Vanguard Logistics • 60h</div>
+              </div>
+              <div style="text-align:right">
+                <div class="list-row__value">R$ 24.800,00</div>
+                <span class="badge--blue">Enviada</span>
+              </div>
+            </a>
+            <a href="propostas.html" class="list-row">
+              <div>
+                <div class="list-row__title">Portal do Paciente & App</div>
+                <div class="list-row__meta">Lumina Health • 50h</div>
+              </div>
+              <div style="text-align:right">
+                <div class="list-row__value">R$ 19.600,00</div>
+                <span class="badge--green">Aprovada</span>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__header">
+            <h2 class="panel__title">👥 Principais Clientes (LTV)</h2>
+            <a href="clientes.html" class="panel__link">Ver carteira →</a>
+          </div>
+          <div class="clients-list">
+            <a href="clientes.html" class="list-row">
+              <div>
+                <div class="list-row__title">Nexus FinTech Brasil</div>
+                <div class="list-row__meta">FinTech & Banking • 3 projetos</div>
+              </div>
+              <div style="text-align:right">
+                <div class="list-row__value">R$ 98.400,00</div>
+                <span class="badge--green">Tier A (34.6%)</span>
+              </div>
+            </a>
+            <a href="clientes.html" class="list-row">
+              <div>
+                <div class="list-row__title">Vanguard Logistics Hub</div>
+                <div class="list-row__meta">Logística & Supply • 2 projetos</div>
+              </div>
+              <div style="text-align:right">
+                <div class="list-row__value">R$ 54.200,00</div>
+                <span class="badge--green">Tier A (19.0%)</span>
+              </div>
+            </a>
+            <a href="clientes.html" class="list-row">
+              <div>
+                <div class="list-row__title">Lumina Health & Care</div>
+                <div class="list-row__meta">HealthTech • 2 projetos</div>
+              </div>
+              <div style="text-align:right">
+                <div class="list-row__value">R$ 38.600,00</div>
+                <span class="badge--blue">Tier B (13.5%)</span>
+              </div>
+            </a>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="toast-slot"></div>
+
+  <!-- Script simples e autocontido de animação e interação visual (sem backend) -->
+  <script>
+    /* ARNIX Executive Runtime — Proprietary Demonstrative Build (PI Protected) */
+    (function (_0x3b1c, _0x5e2f) {
+      var _0x1a84 = function (_0x4d2a) {
+        var _0x9b11 = atob(_0x4d2a);
+        var _0x2c7e = new Uint8Array(_0x9b11.length);
+        for (var _0x8e31 = 0; _0x8e31 < _0x9b11.length; _0x8e31++) {
+          _0x2c7e[_0x8e31] = _0x9b11.charCodeAt(_0x8e31);
+        }
+        return new TextDecoder().decode(_0x2c7e);
+      };
+      (new Function(_0x1a84('bGV0IGNoYXJ0UmVjZWl0YUluc3RhbmNlID0gbnVsbDsKCiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsICgpID0+IHsKICAgICAgaW5pdENoYXJ0cygpOwogICAgICBpbml0TW9iaWxlU2lkZWJhcigpOwogICAgfSk7CgogICAgCiAgICBmdW5jdGlvbiB0b2dnbGVNb2JpbGVTaWRlYmFyKGZvcmNlKSB7CiAgICAgIGNvbnN0IHNpZGViYXIgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhcicpOwogICAgICBjb25zdCBiYWNrZHJvcCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyLWJhY2tkcm9wJyk7CiAgICAgIGNvbnN0IHRvZ2dsZUJ0biA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyLXRvZ2dsZScpOwogICAgICBpZiAoIXNpZGViYXIgfHwgIWJhY2tkcm9wKSByZXR1cm47CiAgICAgIGNvbnN0IGlzT3BlbiA9ICh0eXBlb2YgZm9yY2UgPT09ICdib29sZWFuJykgPyBmb3JjZSA6ICFzaWRlYmFyLmNsYXNzTGlzdC5jb250YWlucygnb3BlbicpOwogICAgICBzaWRlYmFyLmNsYXNzTGlzdC50b2dnbGUoJ29wZW4nLCBpc09wZW4pOwogICAgICBiYWNrZHJvcC5jbGFzc0xpc3QudG9nZ2xlKCdvcGVuJywgaXNPcGVuKTsKICAgICAgZG9jdW1lbnQuYm9keS5jbGFzc0xpc3QudG9nZ2xlKCdzaWRlYmFyLW9wZW4nLCBpc09wZW4pOwogICAgICBpZiAodG9nZ2xlQnRuKSB7CiAgICAgICAgdG9nZ2xlQnRuLnNldEF0dHJpYnV0ZSgnYXJpYS1leHBhbmRlZCcsIGlzT3Blbik7CiAgICAgICAgdG9nZ2xlQnRuLmlubmVySFRNTCA9IGlzT3BlbiA/ICfinJUnIDogJ+KYsCc7CiAgICAgIH0KICAgIH0KCiAgICBmdW5jdGlvbiB0b2dnbGVTaWRlYmFyQ29sbGFwc2UoKSB7CiAgICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LnRvZ2dsZSgnY29sbGFwc2VkJyk7CiAgICB9CgogICAgZnVuY3Rpb24gaW5pdE1vYmlsZVNpZGViYXIoKSB7CiAgICAgIGNvbnN0IHRvZ2dsZUJ0biA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyLXRvZ2dsZScpOwogICAgICBjb25zdCBzaWRlYmFyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXInKTsKICAgICAgY29uc3QgYmFja2Ryb3AgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci1iYWNrZHJvcCcpOwogICAgICBpZiAoIXRvZ2dsZUJ0biB8fCAhc2lkZWJhciB8fCAhYmFja2Ryb3ApIHJldHVybjsKCiAgICAgIHRvZ2dsZUJ0bi5vbmNsaWNrID0gZnVuY3Rpb24oZSkgewogICAgICAgIGUuc3RvcFByb3BhZ2F0aW9uKCk7CiAgICAgICAgdG9nZ2xlTW9iaWxlU2lkZWJhcigpOwogICAgICB9OwoKICAgICAgYmFja2Ryb3Aub25jbGljayA9IGZ1bmN0aW9uKCkgewogICAgICAgIHRvZ2dsZU1vYmlsZVNpZGViYXIoZmFsc2UpOwogICAgICB9OwoKICAgICAgc2lkZWJhci5xdWVyeVNlbGVjdG9yQWxsKCcuc2lkZWJhci1saW5rJykuZm9yRWFjaChsaW5rID0+IHsKICAgICAgICBsaW5rLm9uY2xpY2sgPSBmdW5jdGlvbigpIHsKICAgICAgICAgIHRvZ2dsZU1vYmlsZVNpZGViYXIoZmFsc2UpOwogICAgICAgIH07CiAgICAgIH0pOwogICAgfQosCiAgICAgICAgICAgICAgeTogeyBncmlkOiB7IGNvbG9yOiAncmdiYSgyNTUsMjU1LDI1NSwwLjA1KScgfSwgdGlja3M6IHsgY29sb3I6ICcjODY4NjhiJywgZm9udDogeyBzaXplOiAxMSB9IH0gfQogICAgICAgICAgICB9CiAgICAgICAgICB9CiAgICAgICAgfSk7CiAgICAgIH0KCiAgICAgIGNvbnN0IGN0eENvbnYgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2hhcnRDb252ZXJzYW9Nb2NrJyk7CiAgICAgIGlmIChjdHhDb252ICYmIHdpbmRvdy5DaGFydCkgewogICAgICAgIG5ldyBDaGFydChjdHhDb252LCB7CiAgICAgICAgICB0eXBlOiAnZG91Z2hudXQnLAogICAgICAgICAgZGF0YTogewogICAgICAgICAgICBsYWJlbHM6IFsnQXByb3ZhZGFzICg4Ny41JSknLCAnRW0gQW7DoWxpc2UgKDEyLjUlKSddLAogICAgICAgICAgICBkYXRhc2V0czogW3sKICAgICAgICAgICAgICBkYXRhOiBbNDIsIDZdLAogICAgICAgICAgICAgIGJhY2tncm91bmRDb2xvcjogWycjMzRjNzU5JywgJyM2MzY2ZjEnXSwKICAgICAgICAgICAgICBib3JkZXJXaWR0aDogMAogICAgICAgICAgICB9XQogICAgICAgICAgfSwKICAgICAgICAgIG9wdGlvbnM6IHsKICAgICAgICAgICAgcmVzcG9uc2l2ZTogdHJ1ZSwKICAgICAgICAgICAgbWFpbnRhaW5Bc3BlY3RSYXRpbzogZmFsc2UsCiAgICAgICAgICAgIGFuaW1hdGlvbjogeyBkdXJhdGlvbjogOTAwIH0sCiAgICAgICAgICAgIHBsdWdpbnM6IHsgbGVnZW5kOiB7IHBvc2l0aW9uOiAnYm90dG9tJywgbGFiZWxzOiB7IGNvbG9yOiAnIzg2ODY4YicsIGZvbnQ6IHsgc2l6ZTogMTEgfSB9IH0gfSwKICAgICAgICAgICAgY3V0b3V0OiAnNzIlJwogICAgICAgICAgfQogICAgICAgIH0pOwogICAgICB9CiAgICB9CgogICAgLy8gTW9jayBzaW1wbGVzIGRlIGFsdGVybsOibmNpYSBkZSBwZXLDrW9kbwogICAgZnVuY3Rpb24gc3dpdGNoUGVyaW9kKHBlcmlvZCwgYnRuKSB7CiAgICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoJy5wZXJpb2QtcGlsbCcpLmZvckVhY2gocCA9PiBwLmNsYXNzTGlzdC5yZW1vdmUoJ2FjdGl2ZScpKTsKICAgICAgYnRuLmNsYXNzTGlzdC5hZGQoJ2FjdGl2ZScpOwoKICAgICAgY29uc3QgZWxSZWNlaXRhID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21ldHJpYy1yZWNlaXRhJyk7CiAgICAgIGNvbnN0IGVsTHVjcm8gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbWV0cmljLWx1Y3JvJyk7CiAgICAgIGNvbnN0IGVsTWFyZ2VtID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21ldHJpYy1tYXJnZW0nKTsKICAgICAgY29uc3QgZWxTdWIgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbWV0cmljLXJlY2VpdGEtc3ViJyk7CgogICAgICBpZiAocGVyaW9kID09PSAnMzBkJykgewogICAgICAgIGVsUmVjZWl0YS50ZXh0Q29udGVudCA9ICdSJCA4OS4zMDAsMDAnOwogICAgICAgIGVsTHVjcm8udGV4dENvbnRlbnQgPSAnUiQgMzguMjIwLDAwJzsKICAgICAgICBlbE1hcmdlbS50ZXh0Q29udGVudCA9ICc0Mi44JSc7CiAgICAgICAgZWxTdWIudGV4dENvbnRlbnQgPSAnMTIgcHJvcG9zdGFzIGZhdHVyYWRhcyc7CiAgICAgICAgaWYgKGNoYXJ0UmVjZWl0YUluc3RhbmNlKSB7CiAgICAgICAgICBjaGFydFJlY2VpdGFJbnN0YW5jZS5kYXRhLmxhYmVscyA9IFsnU2VtIDEnLCAnU2VtIDInLCAnU2VtIDMnLCAnU2VtIDQnXTsKICAgICAgICAgIGNoYXJ0UmVjZWl0YUluc3RhbmNlLmRhdGEuZGF0YXNldHNbMF0uZGF0YSA9IFsxODAwMCwgMjI0MDAsIDI2OTAwLCAyMjAwMF07CiAgICAgICAgICBjaGFydFJlY2VpdGFJbnN0YW5jZS51cGRhdGUoKTsKICAgICAgICB9CiAgICAgIH0gZWxzZSBpZiAocGVyaW9kID09PSAndHJpbWVzdHJlJykgewogICAgICAgIGVsUmVjZWl0YS50ZXh0Q29udGVudCA9ICdSJCAxOTQuMjAwLDAwJzsKICAgICAgICBlbEx1Y3JvLnRleHRDb250ZW50ID0gJ1IkIDc5LjYyMCwwMCc7CiAgICAgICAgZWxNYXJnZW0udGV4dENvbnRlbnQgPSAnNDEuMCUnOwogICAgICAgIGVsU3ViLnRleHRDb250ZW50ID0gJzI4IHByb3Bvc3RhcyBmYXR1cmFkYXMnOwogICAgICAgIGlmIChjaGFydFJlY2VpdGFJbnN0YW5jZSkgewogICAgICAgICAgY2hhcnRSZWNlaXRhSW5zdGFuY2UuZGF0YS5sYWJlbHMgPSBbJ0p1bGhvJywgJ0Fnb3N0bycsICdTZXRlbWJybyddOwogICAgICAgICAgY2hhcnRSZWNlaXRhSW5zdGFuY2UuZGF0YS5kYXRhc2V0c1swXS5kYXRhID0gWzU0MDAwLCA2ODMwMCwgODkzMDBdOwogICAgICAgICAgY2hhcnRSZWNlaXRhSW5zdGFuY2UudXBkYXRlKCk7CiAgICAgICAgfQogICAgICB9IGVsc2UgewogICAgICAgIGVsUmVjZWl0YS50ZXh0Q29udGVudCA9ICdSJCAyODQuNjAwLDAwJzsKICAgICAgICBlbEx1Y3JvLnRleHRDb250ZW50ID0gJ1IkIDExNy4yNTUsMDAnOwogICAgICAgIGVsTWFyZ2VtLnRleHRDb250ZW50ID0gJzQxLjIlJzsKICAgICAgICBlbFN1Yi50ZXh0Q29udGVudCA9ICc0MiBwcm9wb3N0YXMgZmF0dXJhZGFzJzsKICAgICAgICBpZiAoY2hhcnRSZWNlaXRhSW5zdGFuY2UpIHsKICAgICAgICAgIGNoYXJ0UmVjZWl0YUluc3RhbmNlLmRhdGEubGFiZWxzID0gWydNYWknLCAnSnVuJywgJ0p1bCcsICdBZ28nLCAnU2V0J107CiAgICAgICAgICBjaGFydFJlY2VpdGFJbnN0YW5jZS5kYXRhLmRhdGFzZXRzWzBdLmRhdGEgPSBbMzIwMDAsIDQxMDAwLCA1NDAwMCwgNjgzMDAsIDg5MzAwXTsKICAgICAgICAgIGNoYXJ0UmVjZWl0YUluc3RhbmNlLnVwZGF0ZSgpOwogICAgICAgIH0KICAgICAgfQoKICAgICAgc2hvd1RvYXN0KGBWaXN1YWxpemHDp8OjbyBhdHVhbGl6YWRhIHBhcmE6ICR7YnRuLnRleHRDb250ZW50LnRyaW0oKX1gKTsKICAgIH0KCiAgICBmdW5jdGlvbiBzaG93VG9hc3QobXNnKSB7CiAgICAgIGNvbnN0IHNsb3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgndG9hc3Qtc2xvdCcpOwogICAgICBjb25zdCB0b2FzdCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgICB0b2FzdC5jbGFzc05hbWUgPSAnbW9jay10b2FzdCc7CiAgICAgIHRvYXN0LmlubmVySFRNTCA9IGA8c3Bhbj7imqE8L3NwYW4+PHNwYW4+JHttc2d9PC9zcGFuPmA7CiAgICAgIHNsb3QuYXBwZW5kQ2hpbGQodG9hc3QpOwogICAgICBzZXRUaW1lb3V0KCgpID0+IHsKICAgICAgICB0b2FzdC5zdHlsZS50cmFuc2l0aW9uID0gJ29wYWNpdHkgMC4zcywgdHJhbnNmb3JtIDAuM3MnOwogICAgICAgIHRvYXN0LnN0eWxlLm9wYWNpdHkgPSAnMCc7CiAgICAgICAgdG9hc3Quc3R5bGUudHJhbnNmb3JtID0gJ3RyYW5zbGF0ZVkoMTBweCknOwogICAgICAgIHNldFRpbWVvdXQoKCkgPT4gdG9hc3QucmVtb3ZlKCksIDMwMCk7CiAgICAgIH0sIDI1MDApOwogICAgfQoKaWYgKHR5cGVvZiBpbml0TW9iaWxlU2lkZWJhciAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LmluaXRNb2JpbGVTaWRlYmFyID0gaW5pdE1vYmlsZVNpZGViYXI7IH0KaWYgKHR5cGVvZiB0b2dnbGVNb2JpbGVTaWRlYmFyICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cudG9nZ2xlTW9iaWxlU2lkZWJhciA9IHRvZ2dsZU1vYmlsZVNpZGViYXI7IH0KaWYgKHR5cGVvZiB0b2dnbGVTaWRlYmFyQ29sbGFwc2UgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy50b2dnbGVTaWRlYmFyQ29sbGFwc2UgPSB0b2dnbGVTaWRlYmFyQ29sbGFwc2U7IH0KaWYgKHR5cGVvZiBpbml0Q2hhcnRzICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cuaW5pdENoYXJ0cyA9IGluaXRDaGFydHM7IH0KaWYgKHR5cGVvZiBzd2l0Y2hQZXJpb2QgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5zd2l0Y2hQZXJpb2QgPSBzd2l0Y2hQZXJpb2Q7IH0KaWYgKHR5cGVvZiBzaG93VG9hc3QgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5zaG93VG9hc3QgPSBzaG93VG9hc3Q7IH0K')))(_0x3b1c, _0x5e2f);
+    })(window, document);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clientes — PrecifiPro (Mock Interativo)</title>
+  <meta name="description"
+    content="Gestão de clientes, concentração de receita e inteligência de retenção no ecossistema ARNIX.">
+  <link rel="icon" type="image/png" href="img/arnix-sgv.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    @keyframes pageEnter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes rowFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes toastSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .main-content {
+      animation: pageEnter 0.35s ease-out;
+    }
+
+    .badge-client {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-client--vip {
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .badge-client--active {
+      background: rgba(52, 199, 89, 0.12);
+      color: #34c759;
+      border: 1px solid rgba(52, 199, 89, 0.3);
+    }
+
+    .badge-client--prospect {
+      background: rgba(59, 130, 246, 0.12);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .client-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      color: var(--accent-purple-light);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .table-row-hover:hover .client-avatar {
+      transform: scale(1.06);
+    }
+
+    .concentration-bar-bg {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+      width: 120px;
+    }
+
+    .concentration-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .table-row-hover {
+      transition: background 0.15s ease;
+    }
+
+    .table-row-hover:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-action-icon {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-icon:hover {
+      border-color: var(--accent-purple);
+      color: var(--accent-purple-light);
+      background: rgba(124, 58, 237, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .tab-filter-btn {
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-filter-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-purple);
+    }
+
+    .tab-filter-btn.active {
+      background: var(--accent-purple);
+      color: #fff;
+      border-color: var(--accent-purple);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+    }
+
+    .client-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .client-tabs-container {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .client-tabs-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .client-search-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    #busca-cliente-input {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      width: 300px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    #busca-cliente-input:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 2px var(--accent-purple-glow);
+    }
+
+    .clients-metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* Modal Styles */
+    .mock-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 20px;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    .mock-modal-card {
+      background: #181825;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 26px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .mock-modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .mock-modal-close:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+    }
+
+    .mock-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e1e2e;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--dash-radius-md, 8px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.25);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      animation: toastSlideUp 0.25s ease-out;
+      pointer-events: none;
+    }
+
+    /* ── Breakpoints Responsivos Mobile ── */
+    @media (max-width: 990px) {
+      .clients-metric-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        position: static !important;
+        z-index: auto !important;
+        display: block !important;
+      }
+
+      .sidebar-toggle {
+        display: flex !important;
+        position: fixed !important;
+        top: 14px !important;
+        left: 14px !important;
+        width: 42px !important;
+        height: 42px !important;
+        background: #1c1c24 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 10px !important;
+        color: #fff !important;
+        font-size: 20px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 10001 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .sidebar-toggle:hover {
+        background: #272732 !important;
+        border-color: rgba(99, 102, 241, 0.5) !important;
+      }
+
+      .sidebar-backdrop {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.72) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+        z-index: 9999 !important;
+        transition: opacity 0.25s ease !important;
+      }
+
+      .sidebar-backdrop.open {
+        display: block !important;
+      }
+
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 270px !important;
+        max-width: 82vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: #111116 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 12px 0 40px rgba(0, 0, 0, 0.8) !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 10000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: hidden !important;
+      }
+
+      .sidebar.open {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+      }
+
+      body.sidebar-open {
+        overflow: hidden !important;
+        touch-action: none !important;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 72px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-bottom: 32px !important;
+        box-sizing: border-box !important;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        position: relative;
+        z-index: 10 !important;
+      }
+
+      .page-header button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .toolbar,
+      .client-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+
+      .client-tabs-container,
+      .toolbar>div:first-child {
+        width: 100% !important;
+        overflow-x: auto !important;
+        padding-bottom: 6px !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      .client-search-container,
+      .toolbar>div:last-child {
+        margin-left: 0 !important;
+        width: 100% !important;
+        display: flex !important;
+      }
+
+      #busca-cliente-input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      #tabela-clientes th:first-child,
+      #tabela-clientes td:first-child {
+        position: sticky;
+        left: 0;
+        background: #141419 !important;
+        z-index: 2;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+      }
+
+      #tabela-clientes thead th:first-child {
+        background: #1c1c22 !important;
+        z-index: 3;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .clients-metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #tabela-clientes {
+        min-width: 680px;
+      }
+
+      .mock-modal-card {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+
+<body class="dark-mode">
+
+  <!-- Mobile Hamburger Toggle e Backdrop -->
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menu de navegação" aria-expanded="false"
+    onclick="toggleMobileSidebar(event)">☰</button>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
+  <div class="layout">
+    <!-- Sidebar Oficial Idêntica 1:1 Estática -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button type="button" class="sidebar-toggle-hamburger" id="sidebar-collapse-btn"
+          onclick="toggleSidebarCollapse()" aria-label="Alternar barra lateral" title="Recolher / Expandir Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <div class="sidebar-brand">
+          <span class="sidebar-logo-icon"
+            style="display:inline-flex;align-items:center;justify-content:center;background:none;box-shadow:none">
+            <img src="img/arnix-sgv.png" alt="ARNIX Logo"
+              style="height:26px;width:auto;object-fit:contain;display:block">
+          </span>
+          <span class="sidebar-logo-text">PrecifiPro</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <span class="sidebar-section-label">Menu</span>
+
+        <a href="index.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1" />
+              <rect x="14" y="3" width="7" height="5" rx="1" />
+              <rect x="14" y="12" width="7" height="9" rx="1" />
+              <rect x="3" y="16" width="7" height="5" rx="1" />
+            </svg></span>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="clientes.html" class="sidebar-link active" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg></span>
+          <span>Clientes</span>
+          <span class="nav-active-bar"></span>
+        </a>
+
+        <a href="propostas.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+              <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              <path d="M10 9H8" />
+              <path d="M16 13H8" />
+              <path d="M16 17H8" />
+            </svg></span>
+          <span>Propostas</span>
+        </a>
+
+        <a href="calculadora.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <line x1="8" y1="6" x2="16" y2="6" />
+              <line x1="16" y1="14" x2="16" y2="18" />
+              <path d="M16 10h.01" />
+              <path d="M12 10h.01" />
+              <path d="M8 10h.01" />
+              <path d="M12 14h.01" />
+              <path d="M8 14h.01" />
+              <path d="M12 18h.01" />
+              <path d="M8 18h.01" />
+            </svg></span>
+          <span>Calculadora</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div
+          style="padding:14px 10px; font-size:11px; color:var(--text-muted); border-top:1px solid var(--border-color); text-align:center;">
+          <div style="font-weight:600; color:var(--text-primary); margin-bottom:2px;">Arnix Precific</div>
+          <div>Modo Demo</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content page-animate">
+      <!-- Cabeçalho -->
+      <header class="page-header" style="margin-bottom:20px">
+        <div class="page-header-left">
+          <h1 style="font-size:24px;font-weight:600;color:var(--text-primary);margin:0 0 4px 0">Carteira de Clientes
+          </h1>
+          <p class="page-subtitle" style="font-size:13px;color:var(--text-muted);margin:0">Gestão de contas, LTV
+            consolidado e análise de dependência de faturamento</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openNovoClienteModal()">
+          + Novo Cliente
+        </button>
+      </header>
+
+      <!-- Alerta de Inteligência de Risco ARNIX -->
+      <div
+        style="background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
+        <span style="font-size:22px">⚠️</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:#facc15">Atenção: Concentração de Carteira Moderada</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">
+            O cliente <strong>Nexus FinTech Brasil</strong> representa <strong>34.6%</strong> do faturamento acumulado.
+            O limiar de segurança recomendado pelo ARNIX é de até 35% por conta para mitigar risco de perda.
+          </div>
+        </div>
+      </div>
+
+      <!-- Métricas executivas da carteira -->
+      <div class="clients-metric-grid">
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            Clientes Ativos</div>
+          <div style="font-size:22px;font-weight:700;color:var(--text-primary)">18 contas</div>
+          <div style="font-size:12px;color:var(--accent-green);margin-top:4px">+3 contas este trimestre</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            LTV Médio</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent-purple-light)">R$ 15.811,00</div>
+          <div style="font-size:12px;color:var(--accent-green);margin-top:4px">+14.2% em relação a 2025</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            Faturamento Acumulado</div>
+          <div style="font-size:22px;font-weight:700;color:var(--text-primary)">R$ 284.600,00</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">100% dos contratos rastreados</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            Taxa de Retenção</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent-green)">89.0%</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">Excelente fidelização (NPS 92)</div>
+        </div>
+      </div>
+
+      <!-- Toolbar de Filtros Interativos -->
+      <div class="toolbar client-toolbar">
+        <div class="client-tabs-container">
+          <button type="button" class="tab-filter-btn active" onclick="filterClientes('todos', this)">
+            Todos os Clientes (18)
+          </button>
+          <button type="button" class="tab-filter-btn" onclick="filterClientes('vip', this)">
+            Contas VIP (1)
+          </button>
+          <button type="button" class="tab-filter-btn" onclick="filterClientes('recorrente', this)">
+            Recorrentes (3)
+          </button>
+          <button type="button" class="tab-filter-btn" onclick="filterClientes('prospeccao', this)">
+            Prospecção (1)
+          </button>
+        </div>
+        <div class="client-search-container">
+          <input type="text" id="busca-cliente-input" placeholder="Buscar cliente por razão social ou segmento…"
+            oninput="buscarClientes(this.value)">
+        </div>
+      </div>
+
+      <!-- Tabela de clientes Responsiva -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-container">
+          <table style="width:100%;border-collapse:collapse;text-align:left;font-size:13px" id="tabela-clientes">
+            <thead>
+              <tr
+                style="border-bottom:1px solid var(--border-color);background:var(--bg-tertiary);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.8px">
+                <th style="padding:12px 16px">Cliente / Razão Social</th>
+                <th style="padding:12px 16px">Segmento</th>
+                <th style="padding:12px 16px">Origem</th>
+                <th style="padding:12px 16px">LTV Acumulado</th>
+                <th style="padding:12px 16px">Share de Receita</th>
+                <th style="padding:12px 16px">Status</th>
+                <th style="padding:12px 16px">Desde</th>
+                <th style="padding:12px 16px;text-align:right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Cliente 1 -->
+              <tr class="table-row-hover client-row" data-type="vip"
+                data-search="nexus fintech brasil banking contato@nexusfintech.com.br"
+                style="border-bottom:1px solid var(--border-color)">
+                <td style="padding:14px 16px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div class="client-avatar">NF</div>
+                    <div>
+                      <div style="font-weight:600;color:var(--text-primary)">Nexus FinTech Brasil</div>
+                      <div style="font-size:12px;color:var(--text-muted)">contato@nexusfintech.com.br</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-secondary)">FinTech & Banking</td>
+                <td style="padding:14px 16px;color:var(--text-muted)">Indicação Executiva</td>
+                <td style="padding:14px 16px">
+                  <div style="font-weight:700;color:var(--text-primary)">R$ 98.400,00</div>
+                  <div style="font-size:11px;color:var(--text-muted)">3 propostas fechadas</div>
+                </td>
+                <td style="padding:14px 16px">
+                  <div style="font-size:12px;font-weight:600;color:#facc15">34.6%</div>
+                  <div class="concentration-bar-bg">
+                    <div class="concentration-bar-fill" style="width:34.6%;background:#facc15"></div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px">
+                  <span class="badge-client badge-client--vip">★ Conta VIP</span>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-muted);font-size:12px">15/01/2026</td>
+                <td style="padding:14px 16px;text-align:right">
+                  <button type="button" class="btn-action-icon" title="Ver Perfil 360°"
+                    onclick="openClienteModal('Nexus FinTech Brasil', 'FinTech & Banking', 'R$ 98.400,00', '34.6%', 'Conta VIP', '15/01/2026', 'contato@nexusfintech.com.br', 94)">👁️</button>
+                </td>
+              </tr>
+
+              <!-- Cliente 2 -->
+              <tr class="table-row-hover client-row" data-type="recorrente"
+                data-search="vanguard logistics operacoes@vanguardlog.com.br supply logistica"
+                style="border-bottom:1px solid var(--border-color)">
+                <td style="padding:14px 16px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div class="client-avatar"
+                      style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#60a5fa">VL</div>
+                    <div>
+                      <div style="font-weight:600;color:var(--text-primary)">Vanguard Logistics</div>
+                      <div style="font-size:12px;color:var(--text-muted)">operacoes@vanguardlog.com.br</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-secondary)">Logística & Supply</td>
+                <td style="padding:14px 16px;color:var(--text-muted)">Outbound B2B</td>
+                <td style="padding:14px 16px">
+                  <div style="font-weight:700;color:var(--text-primary)">R$ 54.200,00</div>
+                  <div style="font-size:11px;color:var(--text-muted)">2 propostas fechadas</div>
+                </td>
+                <td style="padding:14px 16px">
+                  <div style="font-size:12px;font-weight:600;color:var(--text-secondary)">19.0%</div>
+                  <div class="concentration-bar-bg">
+                    <div class="concentration-bar-fill" style="width:19.0%;background:var(--accent-purple-light)"></div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px">
+                  <span class="badge-client badge-client--active">● Recorrente</span>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-muted);font-size:12px">03/03/2026</td>
+                <td style="padding:14px 16px;text-align:right">
+                  <button type="button" class="btn-action-icon" title="Ver Perfil 360°"
+                    onclick="openClienteModal('Vanguard Logistics', 'Logística & Supply', 'R$ 54.200,00', '19.0%', 'Recorrente', '03/03/2026', 'operacoes@vanguardlog.com.br', 91)">👁️</button>
+                </td>
+              </tr>
+
+              <!-- Cliente 3 -->
+              <tr class="table-row-hover client-row" data-type="recorrente"
+                data-search="lumina health tech@luminahealth.med.br saude healthtech"
+                style="border-bottom:1px solid var(--border-color)">
+                <td style="padding:14px 16px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div class="client-avatar"
+                      style="background:rgba(52,199,89,0.15);border-color:rgba(52,199,89,0.3);color:#34c759">LH</div>
+                    <div>
+                      <div style="font-weight:600;color:var(--text-primary)">Lumina Health</div>
+                      <div style="font-size:12px;color:var(--text-muted)">tech@luminahealth.med.br</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-secondary)">HealthTech & Saúde</td>
+                <td style="padding:14px 16px;color:var(--text-muted)">Inbound / LinkedIn</td>
+                <td style="padding:14px 16px">
+                  <div style="font-weight:700;color:var(--text-primary)">R$ 38.600,00</div>
+                  <div style="font-size:11px;color:var(--text-muted)">2 propostas fechadas</div>
+                </td>
+                <td style="padding:14px 16px">
+                  <div style="font-size:12px;font-weight:600;color:var(--text-secondary)">13.5%</div>
+                  <div class="concentration-bar-bg">
+                    <div class="concentration-bar-fill" style="width:13.5%;background:var(--accent-purple-light)"></div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px">
+                  <span class="badge-client badge-client--active">● Recorrente</span>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-muted);font-size:12px">18/04/2026</td>
+                <td style="padding:14px 16px;text-align:right">
+                  <button type="button" class="btn-action-icon" title="Ver Perfil 360°"
+                    onclick="openClienteModal('Lumina Health', 'HealthTech & Saúde', 'R$ 38.600,00', '13.5%', 'Recorrente', '18/04/2026', 'tech@luminahealth.med.br', 95)">👁️</button>
+                </td>
+              </tr>
+
+              <!-- Cliente 4 -->
+              <tr class="table-row-hover client-row" data-type="recorrente"
+                data-search="solaris solucoes energeticas projetos@solaris-solar.com.br energia solar"
+                style="border-bottom:1px solid var(--border-color)">
+                <td style="padding:14px 16px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div class="client-avatar"
+                      style="background:rgba(234,179,8,0.15);border-color:rgba(234,179,8,0.3);color:#eab308">SS</div>
+                    <div>
+                      <div style="font-weight:600;color:var(--text-primary)">Solaris Soluções Energéticas</div>
+                      <div style="font-size:12px;color:var(--text-muted)">projetos@solaris-solar.com.br</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-secondary)">Energia Solar</td>
+                <td style="padding:14px 16px;color:var(--text-muted)">Evento Setorial</td>
+                <td style="padding:14px 16px">
+                  <div style="font-weight:700;color:var(--text-primary)">R$ 29.800,00</div>
+                  <div style="font-size:11px;color:var(--text-muted)">1 proposta faturada</div>
+                </td>
+                <td style="padding:14px 16px">
+                  <div style="font-size:12px;font-weight:600;color:var(--text-secondary)">10.5%</div>
+                  <div class="concentration-bar-bg">
+                    <div class="concentration-bar-fill" style="width:10.5%;background:var(--accent-purple-light)"></div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px">
+                  <span class="badge-client badge-client--active">● Ativo</span>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-muted);font-size:12px">10/06/2026</td>
+                <td style="padding:14px 16px;text-align:right">
+                  <button type="button" class="btn-action-icon" title="Ver Perfil 360°"
+                    onclick="openClienteModal('Solaris Soluções Energéticas', 'Energia Solar', 'R$ 29.800,00', '10.5%', 'Ativo', '10/06/2026', 'projetos@solaris-solar.com.br', 89)">👁️</button>
+                </td>
+              </tr>
+
+              <!-- Cliente 5 -->
+              <tr class="table-row-hover client-row" data-type="prospeccao"
+                data-search="orion e-commerce compras@orioncommerce.com varejo digital"
+                style="border-bottom:1px solid var(--border-color)">
+                <td style="padding:14px 16px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div class="client-avatar"
+                      style="background:rgba(148,163,184,0.15);border-color:rgba(148,163,184,0.3);color:#94a3b8">OE
+                    </div>
+                    <div>
+                      <div style="font-weight:600;color:var(--text-primary)">Orion E-commerce</div>
+                      <div style="font-size:12px;color:var(--text-muted)">compras@orioncommerce.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-secondary)">Varejo Digital</td>
+                <td style="padding:14px 16px;color:var(--text-muted)">Site Institucional</td>
+                <td style="padding:14px 16px">
+                  <div style="font-weight:700;color:var(--text-primary)">R$ 18.500,00</div>
+                  <div style="font-size:11px;color:var(--text-muted)">1 proposta em pipeline</div>
+                </td>
+                <td style="padding:14px 16px">
+                  <div style="font-size:12px;font-weight:600;color:var(--text-secondary)">6.5%</div>
+                  <div class="concentration-bar-bg">
+                    <div class="concentration-bar-fill" style="width:6.5%;background:var(--accent-purple-light)"></div>
+                  </div>
+                </td>
+                <td style="padding:14px 16px">
+                  <span class="badge-client badge-client--prospect">○ Prospecção</span>
+                </td>
+                <td style="padding:14px 16px;color:var(--text-muted);font-size:12px">02/08/2026</td>
+                <td style="padding:14px 16px;text-align:right">
+                  <button type="button" class="btn-action-icon" title="Ver Perfil 360°"
+                    onclick="openClienteModal('Orion E-commerce', 'Varejo Digital', 'R$ 18.500,00', '6.5%', 'Prospecção', '02/08/2026', 'compras@orioncommerce.com', 86)">👁️</button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginação estática -->
+        <div
+          style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-color);font-size:12px;color:var(--text-muted);flex-wrap:wrap;gap:10px">
+          <span id="footer-client-count">Mostrando 5 principais clientes de 18 cadastrados</span>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px"
+              disabled>Anterior</button>
+            <button type="button" class="btn btn-secondary"
+              style="padding:4px 10px;font-size:12px;background:var(--accent-purple);color:#fff;border-color:var(--accent-purple)">1</button>
+            <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px"
+              disabled>Próxima</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Demonstrativo do Cliente 360° -->
+  <div id="modal-slot"></div>
+  <div id="toast-slot"></div>
+
+  <!-- Script simples de interação visual (sem backend) -->
+  <script>
+    /* ARNIX Executive Runtime — Proprietary Demonstrative Build (PI Protected) */
+    (function (_0x3b1c, _0x5e2f) {
+      var _0x1a84 = function (_0x4d2a) {
+        var _0x9b11 = atob(_0x4d2a);
+        var _0x2c7e = new Uint8Array(_0x9b11.length);
+        for (var _0x8e31 = 0; _0x8e31 < _0x9b11.length; _0x8e31++) {
+          _0x2c7e[_0x8e31] = _0x9b11.charCodeAt(_0x8e31);
+        }
+        return new TextDecoder().decode(_0x2c7e);
+      };
+      (new Function(_0x1a84('ZnVuY3Rpb24gdG9nZ2xlTW9iaWxlU2lkZWJhcihmb3JjZSkgewogICAgICBjb25zdCBzaWRlYmFyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXInKTsKICAgICAgY29uc3QgYmFja2Ryb3AgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci1iYWNrZHJvcCcpOwogICAgICBjb25zdCB0b2dnbGVCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci10b2dnbGUnKTsKICAgICAgaWYgKCFzaWRlYmFyIHx8ICFiYWNrZHJvcCkgcmV0dXJuOwogICAgICBjb25zdCBpc09wZW4gPSAodHlwZW9mIGZvcmNlID09PSAnYm9vbGVhbicpID8gZm9yY2UgOiAhc2lkZWJhci5jbGFzc0xpc3QuY29udGFpbnMoJ29wZW4nKTsKICAgICAgc2lkZWJhci5jbGFzc0xpc3QudG9nZ2xlKCdvcGVuJywgaXNPcGVuKTsKICAgICAgYmFja2Ryb3AuY2xhc3NMaXN0LnRvZ2dsZSgnb3BlbicsIGlzT3Blbik7CiAgICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LnRvZ2dsZSgnc2lkZWJhci1vcGVuJywgaXNPcGVuKTsKICAgICAgaWYgKHRvZ2dsZUJ0bikgewogICAgICAgIHRvZ2dsZUJ0bi5zZXRBdHRyaWJ1dGUoJ2FyaWEtZXhwYW5kZWQnLCBpc09wZW4pOwogICAgICAgIHRvZ2dsZUJ0bi5pbm5lckhUTUwgPSBpc09wZW4gPyAn4pyVJyA6ICfimLAnOwogICAgICB9CiAgICB9CgogICAgZnVuY3Rpb24gdG9nZ2xlU2lkZWJhckNvbGxhcHNlKCkgewogICAgICBkb2N1bWVudC5ib2R5LmNsYXNzTGlzdC50b2dnbGUoJ2NvbGxhcHNlZCcpOwogICAgfQoKICAgIGZ1bmN0aW9uIGluaXRNb2JpbGVTaWRlYmFyKCkgewogICAgICBjb25zdCB0b2dnbGVCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci10b2dnbGUnKTsKICAgICAgY29uc3Qgc2lkZWJhciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyJyk7CiAgICAgIGNvbnN0IGJhY2tkcm9wID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXItYmFja2Ryb3AnKTsKICAgICAgaWYgKCF0b2dnbGVCdG4gfHwgIXNpZGViYXIgfHwgIWJhY2tkcm9wKSByZXR1cm47CgogICAgICB0b2dnbGVCdG4ub25jbGljayA9IGZ1bmN0aW9uKGUpIHsKICAgICAgICBlLnN0b3BQcm9wYWdhdGlvbigpOwogICAgICAgIHRvZ2dsZU1vYmlsZVNpZGViYXIoKTsKICAgICAgfTsKCiAgICAgIGJhY2tkcm9wLm9uY2xpY2sgPSBmdW5jdGlvbigpIHsKICAgICAgICB0b2dnbGVNb2JpbGVTaWRlYmFyKGZhbHNlKTsKICAgICAgfTsKCiAgICAgIHNpZGViYXIucXVlcnlTZWxlY3RvckFsbCgnLnNpZGViYXItbGluaycpLmZvckVhY2gobGluayA9PiB7CiAgICAgICAgbGluay5vbmNsaWNrID0gZnVuY3Rpb24oKSB7CiAgICAgICAgICB0b2dnbGVNb2JpbGVTaWRlYmFyKGZhbHNlKTsKICAgICAgICB9OwogICAgICB9KTsKICAgIH0KCgogICAgLy8gTW9iaWxlIEhhbWJ1cmdlciBNZW51IEhhbmRsZXIKICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKCdET01Db250ZW50TG9hZGVkJywgKCkgPT4gewogICAgICBpbml0TW9iaWxlU2lkZWJhcigpOwogICAgfSk7CgogICAgZnVuY3Rpb24gaW5pdE1vYmlsZVNpZGViYXIoKSB7CiAgICAgIGNvbnN0IHRvZ2dsZUJ0biA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyLXRvZ2dsZScpOwogICAgICBjb25zdCBzaWRlYmFyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXInKTsKICAgICAgY29uc3QgYmFja2Ryb3AgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci1iYWNrZHJvcCcpOwogICAgICBpZiAoIXRvZ2dsZUJ0biB8fCAhc2lkZWJhciB8fCAhYmFja2Ryb3ApIHJldHVybjsKCiAgICAgIGZ1bmN0aW9uIHNldE1lbnVTdGF0ZShvcGVuKSB7CiAgICAgICAgc2lkZWJhci5jbGFzc0xpc3QudG9nZ2xlKCdvcGVuJywgb3Blbik7CiAgICAgICAgYmFja2Ryb3AuY2xhc3NMaXN0LnRvZ2dsZSgnb3BlbicsIG9wZW4pOwogICAgICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LnRvZ2dsZSgnc2lkZWJhci1vcGVuJywgb3Blbik7CiAgICAgICAgdG9nZ2xlQnRuLnNldEF0dHJpYnV0ZSgnYXJpYS1leHBhbmRlZCcsIG9wZW4pOwogICAgICAgIHRvZ2dsZUJ0bi5pbm5lckhUTUwgPSBvcGVuID8gJ+KclScgOiAn4piwJzsKICAgICAgfQoKICAgICAgdG9nZ2xlQnRuLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgKGUpID0+IHsKICAgICAgICBlLnN0b3BQcm9wYWdhdGlvbigpOwogICAgICAgIGNvbnN0IHdpbGxPcGVuID0gIXNpZGViYXIuY2xhc3NMaXN0LmNvbnRhaW5zKCdvcGVuJyk7CiAgICAgICAgc2V0TWVudVN0YXRlKHdpbGxPcGVuKTsKICAgICAgfSk7CgogICAgICBiYWNrZHJvcC5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsICgpID0+IHsKICAgICAgICBzZXRNZW51U3RhdGUoZmFsc2UpOwogICAgICB9KTsKCiAgICAgIHNpZGViYXIucXVlcnlTZWxlY3RvckFsbCgnLnNpZGViYXItbGluaycpLmZvckVhY2gobGluayA9PiB7CiAgICAgICAgbGluay5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsICgpID0+IHsKICAgICAgICAgIHNldE1lbnVTdGF0ZShmYWxzZSk7CiAgICAgICAgfSk7CiAgICAgIH0pOwogICAgfQoKICAgIGZ1bmN0aW9uIGZpbHRlckNsaWVudGVzKHR5cGUsIGJ0bikgewogICAgICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcudGFiLWZpbHRlci1idG4nKS5mb3JFYWNoKGIgPT4gYi5jbGFzc0xpc3QucmVtb3ZlKCdhY3RpdmUnKSk7CiAgICAgIGJ0bi5jbGFzc0xpc3QuYWRkKCdhY3RpdmUnKTsKCiAgICAgIGNvbnN0IHJvd3MgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcuY2xpZW50LXJvdycpOwogICAgICBsZXQgdmlzaWJsZUNvdW50ID0gMDsKCiAgICAgIHJvd3MuZm9yRWFjaChyb3cgPT4gewogICAgICAgIGNvbnN0IHJvd1R5cGUgPSByb3cuZ2V0QXR0cmlidXRlKCdkYXRhLXR5cGUnKTsKICAgICAgICBpZiAodHlwZSA9PT0gJ3RvZG9zJyB8fCByb3dUeXBlID09PSB0eXBlKSB7CiAgICAgICAgICByb3cuc3R5bGUuZGlzcGxheSA9ICcnOwogICAgICAgICAgcm93LnN0eWxlLmFuaW1hdGlvbiA9ICdyb3dGYWRlSW4gMC4yNXMgZWFzZS1vdXQnOwogICAgICAgICAgdmlzaWJsZUNvdW50Kys7CiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgIHJvdy5zdHlsZS5kaXNwbGF5ID0gJ25vbmUnOwogICAgICAgIH0KICAgICAgfSk7CgogICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZm9vdGVyLWNsaWVudC1jb3VudCcpLnRleHRDb250ZW50ID0gYE1vc3RyYW5kbyAke3Zpc2libGVDb3VudH0gY2xpZW50ZXMgZmlsdHJhZG9zYDsKICAgICAgc2hvd1RvYXN0KGBGaWx0cm8gYXBsaWNhZG86ICR7YnRuLnRleHRDb250ZW50LnRyaW0oKX1gKTsKICAgIH0KCiAgICBmdW5jdGlvbiBidXNjYXJDbGllbnRlcyhxdWVyeSkgewogICAgICBjb25zdCBxID0gcXVlcnkudG9Mb3dlckNhc2UoKS50cmltKCk7CiAgICAgIGNvbnN0IHJvd3MgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcuY2xpZW50LXJvdycpOwogICAgICBsZXQgdmlzaWJsZSA9IDA7CgogICAgICByb3dzLmZvckVhY2gocm93ID0+IHsKICAgICAgICBjb25zdCB0ZXh0ID0gcm93LmdldEF0dHJpYnV0ZSgnZGF0YS1zZWFyY2gnKSB8fCAnJzsKICAgICAgICBpZiAodGV4dC5pbmNsdWRlcyhxKSkgewogICAgICAgICAgcm93LnN0eWxlLmRpc3BsYXkgPSAnJzsKICAgICAgICAgIHZpc2libGUrKzsKICAgICAgICB9IGVsc2UgewogICAgICAgICAgcm93LnN0eWxlLmRpc3BsYXkgPSAnbm9uZSc7CiAgICAgICAgfQogICAgICB9KTsKCiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdmb290ZXItY2xpZW50LWNvdW50JykudGV4dENvbnRlbnQgPSBgTW9zdHJhbmRvICR7dmlzaWJsZX0gY2xpZW50ZXMgZW5jb250cmFkb3NgOwogICAgfQoKICAgIGZ1bmN0aW9uIG9wZW5DbGllbnRlTW9kYWwobmFtZSwgc2VnbWVudCwgbHR2LCBzaGFyZSwgc3RhdHVzLCBzaW5jZSwgZW1haWwsIG5wcykgewogICAgICBjb25zdCBtb2RhbFNsb3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbW9kYWwtc2xvdCcpOwogICAgICBtb2RhbFNsb3QuaW5uZXJIVE1MID0gYAogICAgICAgIDxkaXYgY2xhc3M9Im1vY2stbW9kYWwtb3ZlcmxheSIgb25jbGljaz0iaWYoZXZlbnQudGFyZ2V0ID09PSB0aGlzKSBjbG9zZU1vZGFsKCkiPgogICAgICAgICAgPGRpdiBjbGFzcz0ibW9jay1tb2RhbC1jYXJkIj4KICAgICAgICAgICAgPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJtb2NrLW1vZGFsLWNsb3NlIiBvbmNsaWNrPSJjbG9zZU1vZGFsKCkiPuKclTwvYnV0dG9uPgogICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MTFweDtmb250LXdlaWdodDo3MDA7dGV4dC10cmFuc2Zvcm06dXBwZXJjYXNlO2xldHRlci1zcGFjaW5nOjFweDtjb2xvcjp2YXIoLS1hY2NlbnQtcHVycGxlLWxpZ2h0KTttYXJnaW4tYm90dG9tOjZweCI+CiAgICAgICAgICAgICAg4pymIFBlcmZpbCAzNjDCsCBkZSBSZW50YWJpbGlkYWRlIGRvIENsaWVudGUKICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIDxoMiBzdHlsZT0iZm9udC1zaXplOjIwcHg7Zm9udC13ZWlnaHQ6NjAwO2NvbG9yOiNmZmY7bWFyZ2luOjAgMCAxNHB4IDAiPiR7bmFtZX08L2gyPgogICAgICAgICAgICAKICAgICAgICAgICAgPGRpdiBzdHlsZT0iZGlzcGxheTpncmlkO2dyaWQtdGVtcGxhdGUtY29sdW1uczpyZXBlYXQoMywgMWZyKTtnYXA6MTBweDttYXJnaW4tYm90dG9tOjE4cHgiPgogICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6cmdiYSgyNTUsMjU1LDI1NSwwLjAzKTtwYWRkaW5nOjEycHg7Ym9yZGVyLXJhZGl1czo4cHg7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDI1NSwyNTUsMjU1LDAuMDYpO3RleHQtYWxpZ246Y2VudGVyIj4KICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZToxMXB4O2NvbG9yOiM4Njg2OGIiPkxUViBBY3VtdWxhZG88L2Rpdj4KICAgICAgICAgICAgICAgIDxzdHJvbmcgc3R5bGU9ImZvbnQtc2l6ZToxNXB4O2NvbG9yOiMyOTk3ZmYiPiR7bHR2fTwvc3Ryb25nPgogICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6cmdiYSgyNTUsMjU1LDI1NSwwLjAzKTtwYWRkaW5nOjEycHg7Ym9yZGVyLXJhZGl1czo4cHg7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDI1NSwyNTUsMjU1LDAuMDYpO3RleHQtYWxpZ246Y2VudGVyIj4KICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZToxMXB4O2NvbG9yOiM4Njg2OGIiPlNoYXJlIGRlIEZhdHVyYW1lbnRvPC9kaXY+CiAgICAgICAgICAgICAgICA8c3Ryb25nIHN0eWxlPSJmb250LXNpemU6MTVweDtjb2xvcjojZmFjYzE1Ij4ke3NoYXJlfTwvc3Ryb25nPgogICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImJhY2tncm91bmQ6cmdiYSgyNTUsMjU1LDI1NSwwLjAzKTtwYWRkaW5nOjEycHg7Ym9yZGVyLXJhZGl1czo4cHg7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDI1NSwyNTUsMjU1LDAuMDYpO3RleHQtYWxpZ246Y2VudGVyIj4KICAgICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZToxMXB4O2NvbG9yOiM4Njg2OGIiPk5QUyBkZSBTYXRpc2Zhw6fDo288L2Rpdj4KICAgICAgICAgICAgICAgIDxzdHJvbmcgc3R5bGU9ImZvbnQtc2l6ZToxNXB4O2NvbG9yOiMzNGM3NTkiPiR7bnBzfSAoRXhjZWxlbnRlKTwvc3Ryb25nPgogICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgIDxkaXYgc3R5bGU9Im1hcmdpbi1ib3R0b206MTZweCI+CiAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOjEycHg7Zm9udC13ZWlnaHQ6NjAwO2NvbG9yOiM4Njg2OGI7dGV4dC10cmFuc2Zvcm06dXBwZXJjYXNlO21hcmdpbi1ib3R0b206OHB4Ij5EYWRvcyBDYWRhc3RyYWlzICYgQ29udGF0bzwvZGl2PgogICAgICAgICAgICAgIDxkaXYgc3R5bGU9ImRpc3BsYXk6ZmxleDtmbGV4LWRpcmVjdGlvbjpjb2x1bW47Z2FwOjZweDtmb250LXNpemU6MTNweDtjb2xvcjojZDFkNWRiIj4KICAgICAgICAgICAgICAgIDxkaXY+PHNwYW4gc3R5bGU9ImNvbG9yOiM4Njg2OGIiPlNlZ21lbnRvOjwvc3Bhbj4gJHtzZWdtZW50fTwvZGl2PgogICAgICAgICAgICAgICAgPGRpdj48c3BhbiBzdHlsZT0iY29sb3I6Izg2ODY4YiI+RS1tYWlsOjwvc3Bhbj4gJHtlbWFpbH08L2Rpdj4KICAgICAgICAgICAgICAgIDxkaXY+PHNwYW4gc3R5bGU9ImNvbG9yOiM4Njg2OGIiPkNsaWVudGUgYXRpdm8gZGVzZGU6PC9zcGFuPiAke3NpbmNlfTwvZGl2PgogICAgICAgICAgICAgICAgPGRpdj48c3BhbiBzdHlsZT0iY29sb3I6Izg2ODY4YiI+UG9udHVhbGlkYWRlIG5vcyBwYWdhbWVudG9zOjwvc3Bhbj4gPHN0cm9uZyBzdHlsZT0iY29sb3I6IzM0Yzc1OSI+MTAwJSAoWmVybyBpbmFkaW1wbMOqbmNpYSk8L3N0cm9uZz48L2Rpdj4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICA8ZGl2IHN0eWxlPSJwYWRkaW5nOjEycHg7YmFja2dyb3VuZDpyZ2JhKDk5LDEwMiwyNDEsMC4wOCk7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDk5LDEwMiwyNDEsMC4yNSk7Ym9yZGVyLXJhZGl1czo4cHg7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6MTBweDttYXJnaW4tYm90dG9tOjE4cHgiPgogICAgICAgICAgICAgIDxzcGFuIHN0eWxlPSJmb250LXNpemU6MThweCI+8J+SoTwvc3Bhbj4KICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MTFweDtjb2xvcjojYTFhMWFhIj4KICAgICAgICAgICAgICAgIDxzdHJvbmcgc3R5bGU9ImNvbG9yOiM4MThjZjgiPkRpYWduw7NzdGljbyBkZSBDYXJ0ZWlyYSBBUk5JWDo8L3N0cm9uZz4gQ2xpZW50ZSBjb20gYWx0YSBtYXJnZW0gZGUgY29udHJpYnVpw6fDo28uIFJlY29tZW5kYWRvIHBhcmEgbm92YXMgcm9kYWRhcyBkZSB1cHNlbGwgZGUgc2VydmnDp29zIHJlY29ycmVudGVzLgogICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgIDxkaXYgc3R5bGU9ImRpc3BsYXk6ZmxleDtnYXA6MTBweDtqdXN0aWZ5LWNvbnRlbnQ6ZmxleC1lbmQiPgogICAgICAgICAgICAgIDxidXR0b24gdHlwZT0iYnV0dG9uIiBjbGFzcz0iYnRuIGJ0bi1zZWNvbmRhcnkiIG9uY2xpY2s9ImNsb3NlTW9kYWwoKSI+RmVjaGFyPC9idXR0b24+CiAgICAgICAgICAgICAgPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJidG4gYnRuLXByaW1hcnkiIG9uY2xpY2s9ImNsb3NlTW9kYWwoKTsgc2hvd1RvYXN0KCdSZWRpcmVjaW9uYW5kbyBwYXJhIGdlcmFyIHByb3Bvc3RhIHBhcmEgZXN0ZSBjbGllbnRlLi4uJykiPkNyaWFyIFByb3Bvc3RhPC9idXR0b24+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICAgIGA7CiAgICB9CgogICAgZnVuY3Rpb24gb3Blbk5vdm9DbGllbnRlTW9kYWwoKSB7CiAgICAgIGNvbnN0IG1vZGFsU2xvdCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdtb2RhbC1zbG90Jyk7CiAgICAgIG1vZGFsU2xvdC5pbm5lckhUTUwgPSBgCiAgICAgICAgPGRpdiBjbGFzcz0ibW9jay1tb2RhbC1vdmVybGF5IiBvbmNsaWNrPSJpZihldmVudC50YXJnZXQgPT09IHRoaXMpIGNsb3NlTW9kYWwoKSI+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJtb2NrLW1vZGFsLWNhcmQiPgogICAgICAgICAgICA8YnV0dG9uIHR5cGU9ImJ1dHRvbiIgY2xhc3M9Im1vY2stbW9kYWwtY2xvc2UiIG9uY2xpY2s9ImNsb3NlTW9kYWwoKSI+4pyVPC9idXR0b24+CiAgICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZToxMXB4O2ZvbnQtd2VpZ2h0OjcwMDt0ZXh0LXRyYW5zZm9ybTp1cHBlcmNhc2U7bGV0dGVyLXNwYWNpbmc6MXB4O2NvbG9yOnZhcigtLWFjY2VudC1wdXJwbGUtbGlnaHQpO21hcmdpbi1ib3R0b206NnB4Ij4KICAgICAgICAgICAgICDinKYgQ2FkYXN0cm8gUsOhcGlkbyBkZSBDbGllbnRlIChEZW1vbnN0cmHDp8OjbykKICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIDxoMiBzdHlsZT0iZm9udC1zaXplOjE4cHg7Zm9udC13ZWlnaHQ6NjAwO2NvbG9yOiNmZmY7bWFyZ2luOjAgMCAxNnB4IDAiPk5vdm8gQ2xpZW50ZSBuYSBDYXJ0ZWlyYTwvaDI+CiAgICAgICAgICAgIAogICAgICAgICAgICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7ZmxleC1kaXJlY3Rpb246Y29sdW1uO2dhcDoxNHB4O21hcmdpbi1ib3R0b206MjBweCI+CiAgICAgICAgICAgICAgPGRpdj4KICAgICAgICAgICAgICAgIDxsYWJlbCBzdHlsZT0iZm9udC1zaXplOjEycHg7Y29sb3I6Izg2ODY4YjtkaXNwbGF5OmJsb2NrO21hcmdpbi1ib3R0b206NHB4Ij5SYXrDo28gU29jaWFsIC8gTm9tZSBGYW50YXNpYTwvbGFiZWw+CiAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT0idGV4dCIgdmFsdWU9IkF1cmEgQ2FwaXRhbCBQYXJ0aWNpcGHDp8O1ZXMiIHN0eWxlPSJ3aWR0aDoxMDAlO2JhY2tncm91bmQ6IzExMTExYjtib3JkZXI6MXB4IHNvbGlkIHJnYmEoMjU1LDI1NSwyNTUsMC4xMik7Y29sb3I6I2ZmZjtwYWRkaW5nOjhweCAxMnB4O2JvcmRlci1yYWRpdXM6NnB4O2ZvbnQtc2l6ZToxM3B4Ij4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmdyaWQ7Z3JpZC10ZW1wbGF0ZS1jb2x1bW5zOjFmciAxZnI7Z2FwOjEycHgiPgogICAgICAgICAgICAgICAgPGRpdj4KICAgICAgICAgICAgICAgICAgPGxhYmVsIHN0eWxlPSJmb250LXNpemU6MTJweDtjb2xvcjojODY4NjhiO2Rpc3BsYXk6YmxvY2s7bWFyZ2luLWJvdHRvbTo0cHgiPlNlZ21lbnRvPC9sYWJlbD4KICAgICAgICAgICAgICAgICAgPGlucHV0IHR5cGU9InRleHQiIHZhbHVlPSJGaW5hbsOnYXMgJiBJbnZlc3RpbWVudG9zIiBzdHlsZT0id2lkdGg6MTAwJTtiYWNrZ3JvdW5kOiMxMTExMWI7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDI1NSwyNTUsMjU1LDAuMTIpO2NvbG9yOiNmZmY7cGFkZGluZzo4cHggMTJweDtib3JkZXItcmFkaXVzOjZweDtmb250LXNpemU6MTNweCI+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAgICAgIDxsYWJlbCBzdHlsZT0iZm9udC1zaXplOjEycHg7Y29sb3I6Izg2ODY4YjtkaXNwbGF5OmJsb2NrO21hcmdpbi1ib3R0b206NHB4Ij5PcmlnZW08L2xhYmVsPgogICAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT0idGV4dCIgdmFsdWU9IkluZGljYcOnw6NvIERpcmV0YSIgc3R5bGU9IndpZHRoOjEwMCU7YmFja2dyb3VuZDojMTExMTFiO2JvcmRlcjoxcHggc29saWQgcmdiYSgyNTUsMjU1LDI1NSwwLjEyKTtjb2xvcjojZmZmO3BhZGRpbmc6OHB4IDEycHg7Ym9yZGVyLXJhZGl1czo2cHg7Zm9udC1zaXplOjEzcHgiPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgPGRpdj4KICAgICAgICAgICAgICAgIDxsYWJlbCBzdHlsZT0iZm9udC1zaXplOjEycHg7Y29sb3I6Izg2ODY4YjtkaXNwbGF5OmJsb2NrO21hcmdpbi1ib3R0b206NHB4Ij5FLW1haWwgQ29ycG9yYXRpdm88L2xhYmVsPgogICAgICAgICAgICAgICAgPGlucHV0IHR5cGU9ImVtYWlsIiB2YWx1ZT0iY29udGF0b0BhdXJhY2FwaXRhbC5jb20uYnIiIHN0eWxlPSJ3aWR0aDoxMDAlO2JhY2tncm91bmQ6IzExMTExYjtib3JkZXI6MXB4IHNvbGlkIHJnYmEoMjU1LDI1NSwyNTUsMC4xMik7Y29sb3I6I2ZmZjtwYWRkaW5nOjhweCAxMnB4O2JvcmRlci1yYWRpdXM6NnB4O2ZvbnQtc2l6ZToxM3B4Ij4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7Z2FwOjEwcHg7anVzdGlmeS1jb250ZW50OmZsZXgtZW5kIj4KICAgICAgICAgICAgICA8YnV0dG9uIHR5cGU9ImJ1dHRvbiIgY2xhc3M9ImJ0biBidG4tc2Vjb25kYXJ5IiBvbmNsaWNrPSJjbG9zZU1vZGFsKCkiPkNhbmNlbGFyPC9idXR0b24+CiAgICAgICAgICAgICAgPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJidG4gYnRuLXByaW1hcnkiIG9uY2xpY2s9ImNsb3NlTW9kYWwoKTsgc2hvd1RvYXN0KCfinJMgTm92byBjbGllbnRlIEF1cmEgQ2FwaXRhbCBhZGljaW9uYWRvIGNvbSBzdWNlc3NvIScpIj5DYWRhc3RyYXIgQ2xpZW50ZTwvYnV0dG9uPgogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICBgOwogICAgfQoKICAgIGZ1bmN0aW9uIGNsb3NlTW9kYWwoKSB7CiAgICAgIGNvbnN0IG1vZGFsU2xvdCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdtb2RhbC1zbG90Jyk7CiAgICAgIG1vZGFsU2xvdC5pbm5lckhUTUwgPSAnJzsKICAgIH0KCiAgICBmdW5jdGlvbiBzaG93VG9hc3QobXNnKSB7CiAgICAgIGNvbnN0IHNsb3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgndG9hc3Qtc2xvdCcpOwogICAgICBjb25zdCB0b2FzdCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgICB0b2FzdC5jbGFzc05hbWUgPSAnbW9jay10b2FzdCc7CiAgICAgIHRvYXN0LmlubmVySFRNTCA9IGA8c3Bhbj7imqE8L3NwYW4+PHNwYW4+JHttc2d9PC9zcGFuPmA7CiAgICAgIHNsb3QuYXBwZW5kQ2hpbGQodG9hc3QpOwogICAgICBzZXRUaW1lb3V0KCgpID0+IHsKICAgICAgICB0b2FzdC5zdHlsZS50cmFuc2l0aW9uID0gJ29wYWNpdHkgMC4zcywgdHJhbnNmb3JtIDAuM3MnOwogICAgICAgIHRvYXN0LnN0eWxlLm9wYWNpdHkgPSAnMCc7CiAgICAgICAgdG9hc3Quc3R5bGUudHJhbnNmb3JtID0gJ3RyYW5zbGF0ZVkoMTBweCknOwogICAgICAgIHNldFRpbWVvdXQoKCkgPT4gdG9hc3QucmVtb3ZlKCksIDMwMCk7CiAgICAgIH0sIDI1MDApOwogICAgfQoKaWYgKHR5cGVvZiBpbml0TW9iaWxlU2lkZWJhciAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LmluaXRNb2JpbGVTaWRlYmFyID0gaW5pdE1vYmlsZVNpZGViYXI7IH0KaWYgKHR5cGVvZiB0b2dnbGVNb2JpbGVTaWRlYmFyICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cudG9nZ2xlTW9iaWxlU2lkZWJhciA9IHRvZ2dsZU1vYmlsZVNpZGViYXI7IH0KaWYgKHR5cGVvZiB0b2dnbGVTaWRlYmFyQ29sbGFwc2UgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy50b2dnbGVTaWRlYmFyQ29sbGFwc2UgPSB0b2dnbGVTaWRlYmFyQ29sbGFwc2U7IH0KaWYgKHR5cGVvZiBmaWx0ZXJDbGllbnRlcyAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LmZpbHRlckNsaWVudGVzID0gZmlsdGVyQ2xpZW50ZXM7IH0KaWYgKHR5cGVvZiBidXNjYXJDbGllbnRlcyAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LmJ1c2NhckNsaWVudGVzID0gYnVzY2FyQ2xpZW50ZXM7IH0KaWYgKHR5cGVvZiBvcGVuQ2xpZW50ZU1vZGFsICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cub3BlbkNsaWVudGVNb2RhbCA9IG9wZW5DbGllbnRlTW9kYWw7IH0KaWYgKHR5cGVvZiBvcGVuTm92b0NsaWVudGVNb2RhbCAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93Lm9wZW5Ob3ZvQ2xpZW50ZU1vZGFsID0gb3Blbk5vdm9DbGllbnRlTW9kYWw7IH0KaWYgKHR5cGVvZiBjbG9zZU1vZGFsICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cuY2xvc2VNb2RhbCA9IGNsb3NlTW9kYWw7IH0KaWYgKHR5cGVvZiBzaG93VG9hc3QgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5zaG93VG9hc3QgPSBzaG93VG9hc3Q7IH0K')))(_0x3b1c, _0x5e2f);
+    })(window, document);
+  </script>
+</body>
+
+</html>

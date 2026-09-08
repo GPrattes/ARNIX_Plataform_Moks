@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Propostas — PrecifiPro (Mock Interativo)</title>
+  <meta name="description" content="Gestão e pipeline de propostas comerciais inteligentes do ARNIX.">
+  <link rel="icon" type="image/png" href="img/arnix-sgv.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    @keyframes pageEnter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes rowFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes toastSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .main-content {
+      animation: pageEnter 0.35s ease-out;
+    }
+
+    /* ── Refinamento de Densidade Visual da Tabela ── */
+    #tabela-propostas {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    #tabela-propostas thead th {
+      padding: 14px 18px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #9ca3af;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    #tabela-propostas tbody td {
+      padding: 16px 18px;
+      vertical-align: middle;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .prop-title-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .prop-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .prop-title {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #f3f4f6;
+      line-height: 1.35;
+    }
+
+    .urgency-chip {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.28);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .prop-meta {
+      font-size: 11.5px;
+      color: #8b8b99;
+    }
+
+    .prop-client {
+      font-size: 13px;
+      font-weight: 400;
+      color: #d1d5db;
+      white-space: nowrap;
+    }
+
+    .prop-type {
+      font-size: 12px;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+
+    .prop-value {
+      font-family: var(--font-display);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+
+    .prop-margin-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .prop-margin-pct {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--accent-green);
+    }
+
+    .prop-margin-lucro {
+      font-size: 11px;
+      color: #8b8b99;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11.5px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-status--negotiation {
+      background: rgba(234, 179, 8, 0.1);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.25);
+    }
+
+    .badge-status--sent {
+      background: rgba(59, 130, 246, 0.1);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .badge-status--approved {
+      background: rgba(52, 199, 89, 0.1);
+      color: #34c759;
+      border: 1px solid rgba(52, 199, 89, 0.25);
+    }
+
+    .badge-status--invoiced {
+      background: rgba(168, 85, 247, 0.1);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .badge-status--draft {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .table-row-hover {
+      transition: background 0.15s ease;
+    }
+
+    .table-row-hover:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .table-actions-cell {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .btn-action-icon {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-icon:hover {
+      border-color: var(--accent-purple);
+      color: var(--accent-purple-light);
+      background: rgba(124, 58, 237, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .tab-filter-btn {
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-filter-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-purple);
+    }
+
+    .tab-filter-btn.active {
+      background: var(--accent-purple);
+      color: #fff;
+      border-color: var(--accent-purple);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+    }
+
+    .prop-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .prop-tabs-container {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .prop-tabs-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .prop-search-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    #input-busca-propostas {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      width: 280px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    #input-busca-propostas:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 2px var(--accent-purple-glow);
+    }
+
+    .pipeline-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* Modal Overlay Styles */
+    .mock-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 20px;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    .mock-modal-card {
+      background: #181825;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 26px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .mock-modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .mock-modal-close:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+    }
+
+    .mock-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e1e2e;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--dash-radius-md, 8px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.25);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      animation: toastSlideUp 0.25s ease-out;
+      pointer-events: none;
+    }
+
+    /* ── Breakpoints Responsivos Mobile ── */
+    @media (max-width: 990px) {
+      .pipeline-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        position: static !important;
+        z-index: auto !important;
+        display: block !important;
+      }
+
+      .sidebar-toggle {
+        display: flex !important;
+        position: fixed !important;
+        top: 14px !important;
+        left: 14px !important;
+        width: 42px !important;
+        height: 42px !important;
+        background: #1c1c24 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 10px !important;
+        color: #fff !important;
+        font-size: 20px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 10001 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .sidebar-toggle:hover {
+        background: #272732 !important;
+        border-color: rgba(99, 102, 241, 0.5) !important;
+      }
+
+      .sidebar-backdrop {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.72) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+        z-index: 9999 !important;
+        transition: opacity 0.25s ease !important;
+      }
+
+      .sidebar-backdrop.open {
+        display: block !important;
+      }
+
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 270px !important;
+        max-width: 82vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: #111116 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 12px 0 40px rgba(0, 0, 0, 0.8) !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 10000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: hidden !important;
+      }
+
+      .sidebar.open {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+      }
+
+      body.sidebar-open {
+        overflow: hidden !important;
+        touch-action: none !important;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 72px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-bottom: 32px !important;
+        box-sizing: border-box !important;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        position: relative;
+        z-index: 10 !important;
+      }
+
+      .page-header button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .toolbar,
+      .prop-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+
+      .prop-tabs-container,
+      .toolbar>div:first-child {
+        width: 100% !important;
+        overflow-x: auto !important;
+        padding-bottom: 6px !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      .prop-search-container,
+      .toolbar>div:last-child {
+        margin-left: 0 !important;
+        width: 100% !important;
+        display: flex !important;
+      }
+
+      #input-busca-propostas {
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      #tabela-propostas th:first-child,
+      #tabela-propostas td:first-child {
+        position: sticky;
+        left: 0;
+        background: #141419 !important;
+        z-index: 2;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+      }
+
+      #tabela-propostas thead th:first-child {
+        background: #1c1c22 !important;
+        z-index: 3;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .pipeline-summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #tabela-propostas {
+        min-width: 680px;
+      }
+
+      .mock-modal-card {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+
+<body class="dark-mode">
+
+  <!-- Mobile Hamburger Toggle e Backdrop -->
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menu de navegação" aria-expanded="false"
+    onclick="toggleMobileSidebar(event)">☰</button>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
+  <div class="layout">
+    <!-- Sidebar Oficial Idêntica 1:1 Estática -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button type="button" class="sidebar-toggle-hamburger" id="sidebar-collapse-btn"
+          onclick="toggleSidebarCollapse()" aria-label="Alternar barra lateral" title="Recolher / Expandir Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <div class="sidebar-brand">
+          <span class="sidebar-logo-icon"
+            style="display:inline-flex;align-items:center;justify-content:center;background:none;box-shadow:none">
+            <img src="img/arnix-sgv.png" alt="ARNIX Logo"
+              style="height:26px;width:auto;object-fit:contain;display:block">
+          </span>
+          <span class="sidebar-logo-text">PrecifiPro</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <span class="sidebar-section-label">Menu</span>
+
+        <a href="index.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1" />
+              <rect x="14" y="3" width="7" height="5" rx="1" />
+              <rect x="14" y="12" width="7" height="9" rx="1" />
+              <rect x="3" y="16" width="7" height="5" rx="1" />
+            </svg></span>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="clientes.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg></span>
+          <span>Clientes</span>
+        </a>
+
+        <a href="propostas.html" class="sidebar-link active" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+              <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              <path d="M10 9H8" />
+              <path d="M16 13H8" />
+              <path d="M16 17H8" />
+            </svg></span>
+          <span>Propostas</span>
+          <span class="nav-active-bar"></span>
+        </a>
+
+        <a href="calculadora.html" class="sidebar-link" onclick="toggleMobileSidebar(false)">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <line x1="8" y1="6" x2="16" y2="6" />
+              <line x1="16" y1="14" x2="16" y2="18" />
+              <path d="M16 10h.01" />
+              <path d="M12 10h.01" />
+              <path d="M8 10h.01" />
+              <path d="M12 14h.01" />
+              <path d="M8 14h.01" />
+              <path d="M12 18h.01" />
+              <path d="M8 18h.01" />
+            </svg></span>
+          <span>Calculadora</span>
+        </a>
+      </nav>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div
+          style="padding:14px 10px; font-size:11px; color:var(--text-muted); border-top:1px solid var(--border-color); text-align:center;">
+          <div style="font-weight:600; color:var(--text-primary); margin-bottom:2px;">Arnix Precific</div>
+          <div>Modo Demo</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content page-animate">
+      <!-- Cabeçalho -->
+      <header class="page-header" style="margin-bottom:20px">
+        <div class="page-header-left">
+          <h1 style="font-size:24px;font-weight:600;color:var(--text-primary);margin:0 0 4px 0">Propostas Comerciais
+          </h1>
+          <p class="page-subtitle" style="font-size:13px;color:var(--text-muted);margin:0">Pipeline comercial, margens
+            líquidas e acompanhamento de contratos</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openNovaPropostaModal()">
+          + Nova Proposta
+        </button>
+      </header>
+
+      <!-- Resumo rápido do pipeline -->
+      <div class="pipeline-summary-grid">
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            Total em Pipeline</div>
+          <div style="font-size:22px;font-weight:700;color:var(--text-primary)">R$ 127.200,00</div>
+          <div style="font-size:12px;color:var(--accent-purple-light);margin-top:4px">5 propostas ativas</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            Aprovadas no Mês</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent-green)">R$ 35.000,00</div>
+          <div style="font-size:12px;color:var(--accent-green);margin-top:4px">2 contratos fechados</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            Margem Média</div>
+          <div style="font-size:22px;font-weight:700;color:var(--text-primary)">40.3%</div>
+          <div style="font-size:12px;color:var(--accent-green);margin-top:4px">R$ 51.094 de lucro projetado</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div
+            style="font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.8px;margin-bottom:6px">
+            Taxa de Conversão</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent-purple-light)">87.5%</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">acima da meta (70%)</div>
+        </div>
+      </div>
+
+      <!-- Toolbar de Filtros Interativos -->
+      <div class="toolbar prop-toolbar">
+        <div class="prop-tabs-container">
+          <button type="button" class="tab-filter-btn active" onclick="filterPropostas('todas', this)">
+            Todas (5)
+          </button>
+          <button type="button" class="tab-filter-btn" onclick="filterPropostas('negociacao', this)">
+            Em Negociação (1)
+          </button>
+          <button type="button" class="tab-filter-btn" onclick="filterPropostas('enviada', this)">
+            Enviadas (1)
+          </button>
+          <button type="button" class="tab-filter-btn" onclick="filterPropostas('aprovada', this)">
+            Aprovadas / Faturadas (2)
+          </button>
+          <button type="button" class="tab-filter-btn" onclick="filterPropostas('rascunho', this)">
+            Rascunho (1)
+          </button>
+        </div>
+        <div class="prop-search-container">
+          <input type="text" id="input-busca-propostas" placeholder="Buscar proposta ou cliente…"
+            oninput="buscarPropostas(this.value)">
+        </div>
+      </div>
+
+      <!-- Tabela de propostas Responsiva -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-container">
+          <table style="width:100%;border-collapse:collapse;text-align:left;font-size:13px" id="tabela-propostas">
+            <thead>
+              <tr
+                style="border-bottom:1px solid var(--border-color);background:var(--bg-tertiary);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.8px">
+                <th style="min-width:260px">Proposta</th>
+                <th style="min-width:160px">Cliente</th>
+                <th style="min-width:150px">Tipo de Projeto</th>
+                <th style="min-width:125px">Valor Final</th>
+                <th style="min-width:115px">Margem Real</th>
+                <th style="min-width:125px">Status</th>
+                <th style="min-width:95px">Data</th>
+                <th style="min-width:85px;text-align:right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Proposta 1 -->
+              <tr class="table-row-hover prop-row" data-status="negociacao"
+                data-search="pix 2.0 nexus fintech brasil fintech core backend">
+                <td>
+                  <div class="prop-title-cell">
+                    <div class="prop-title-row">
+                      <span class="prop-title">Sistema de Pagamentos Pix 2.0</span>
+                      <span class="urgency-chip">+20% URGENTE</span>
+                    </div>
+                    <div class="prop-meta">PRO-2026-089 • 80 horas</div>
+                  </div>
+                </td>
+                <td><span class="prop-client">Nexus FinTech Brasil</span></td>
+                <td><span class="prop-type">FinTech Core Backend</span></td>
+                <td><span class="prop-value">R$ 38.500,00</span></td>
+                <td>
+                  <div class="prop-margin-box">
+                    <span class="prop-margin-pct">42.0%</span>
+                    <span class="prop-margin-lucro">R$ 16.170 lucro</span>
+                  </div>
+                </td>
+                <td><span class="badge-status badge-status--negotiation">● Em Negociação</span></td>
+                <td><span class="prop-type" style="font-size:12px">04/09/2026</span></td>
+                <td style="text-align:right">
+                  <div class="table-actions-cell">
+                    <button type="button" class="btn-action-icon" title="Ver Detalhes"
+                      onclick="openDetalhesModal('PRO-2026-089', 'Sistema de Pagamentos Pix 2.0', 'Nexus FinTech Brasil', 'R$ 38.500,00', '42.0%', 'Em Negociação')">👁️</button>
+                    <button type="button" class="btn-action-icon" title="Exportar PDF"
+                      onclick="exportarPDFMock('PRO-2026-089')">📄</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Proposta 2 -->
+              <tr class="table-row-hover prop-row" data-status="enviada"
+                data-search="plataforma iot telemetria vanguard logistics dashboard cloud">
+                <td>
+                  <div class="prop-title-cell">
+                    <div class="prop-title-row">
+                      <span class="prop-title">Plataforma IoT Telemetria de Frotas</span>
+                    </div>
+                    <div class="prop-meta">PRO-2026-084 • 60 horas</div>
+                  </div>
+                </td>
+                <td><span class="prop-client">Vanguard Logistics</span></td>
+                <td><span class="prop-type">IoT / Dashboard Cloud</span></td>
+                <td><span class="prop-value">R$ 24.800,00</span></td>
+                <td>
+                  <div class="prop-margin-box">
+                    <span class="prop-margin-pct">38.5%</span>
+                    <span class="prop-margin-lucro">R$ 9.548 lucro</span>
+                  </div>
+                </td>
+                <td><span class="badge-status badge-status--sent">● Enviada</span></td>
+                <td><span class="prop-type" style="font-size:12px">01/09/2026</span></td>
+                <td style="text-align:right">
+                  <div class="table-actions-cell">
+                    <button type="button" class="btn-action-icon" title="Ver Detalhes"
+                      onclick="openDetalhesModal('PRO-2026-084', 'Plataforma IoT Telemetria', 'Vanguard Logistics', 'R$ 24.800,00', '38.5%', 'Enviada')">👁️</button>
+                    <button type="button" class="btn-action-icon" title="Exportar PDF"
+                      onclick="exportarPDFMock('PRO-2026-084')">📄</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Proposta 3 -->
+              <tr class="table-row-hover prop-row" data-status="aprovada"
+                data-search="portal do paciente telemedicina lumina health web app mobile">
+                <td>
+                  <div class="prop-title-cell">
+                    <div class="prop-title-row">
+                      <span class="prop-title">Portal do Paciente & Telemedicina</span>
+                    </div>
+                    <div class="prop-meta">PRO-2026-079 • 50 horas</div>
+                  </div>
+                </td>
+                <td><span class="prop-client">Lumina Health</span></td>
+                <td><span class="prop-type">Web App & Mobile</span></td>
+                <td><span class="prop-value">R$ 19.600,00</span></td>
+                <td>
+                  <div class="prop-margin-box">
+                    <span class="prop-margin-pct">45.0%</span>
+                    <span class="prop-margin-lucro">R$ 8.820 lucro</span>
+                  </div>
+                </td>
+                <td><span class="badge-status badge-status--approved">● Aprovada</span></td>
+                <td><span class="prop-type" style="font-size:12px">28/08/2026</span></td>
+                <td style="text-align:right">
+                  <div class="table-actions-cell">
+                    <button type="button" class="btn-action-icon" title="Ver Detalhes"
+                      onclick="openDetalhesModal('PRO-2026-079', 'Portal do Paciente & Telemedicina', 'Lumina Health', 'R$ 19.600,00', '45.0%', 'Aprovada')">👁️</button>
+                    <button type="button" class="btn-action-icon" title="Exportar PDF"
+                      onclick="exportarPDFMock('PRO-2026-079')">📄</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Proposta 4 -->
+              <tr class="table-row-hover prop-row" data-status="aprovada"
+                data-search="calculadora solar crm comercial solaris solucoes energeticas full stack web">
+                <td>
+                  <div class="prop-title-cell">
+                    <div class="prop-title-row">
+                      <span class="prop-title">Calculadora Solar & CRM Comercial</span>
+                    </div>
+                    <div class="prop-meta">PRO-2026-072 • 40 horas</div>
+                  </div>
+                </td>
+                <td><span class="prop-client">Solaris Soluções Energéticas</span></td>
+                <td><span class="prop-type">Full-Stack Web</span></td>
+                <td><span class="prop-value">R$ 15.400,00</span></td>
+                <td>
+                  <div class="prop-margin-box">
+                    <span class="prop-margin-pct">40.0%</span>
+                    <span class="prop-margin-lucro">R$ 6.160 lucro</span>
+                  </div>
+                </td>
+                <td><span class="badge-status badge-status--invoiced">● Faturada</span></td>
+                <td><span class="prop-type" style="font-size:12px">22/08/2026</span></td>
+                <td style="text-align:right">
+                  <div class="table-actions-cell">
+                    <button type="button" class="btn-action-icon" title="Ver Detalhes"
+                      onclick="openDetalhesModal('PRO-2026-072', 'Calculadora Solar & CRM Comercial', 'Solaris Soluções', 'R$ 15.400,00', '40.0%', 'Faturada')">👁️</button>
+                    <button type="button" class="btn-action-icon" title="Exportar PDF"
+                      onclick="exportarPDFMock('PRO-2026-072')">📄</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Proposta 5 -->
+              <tr class="table-row-hover prop-row" data-status="rascunho"
+                data-search="app mobile b2b vendas estoque orion e-commerce react native">
+                <td>
+                  <div class="prop-title-cell">
+                    <div class="prop-title-row">
+                      <span class="prop-title">App Mobile B2B Vendas & Estoque</span>
+                    </div>
+                    <div class="prop-meta">PRO-2026-068 • 70 horas</div>
+                  </div>
+                </td>
+                <td><span class="prop-client">Orion E-commerce</span></td>
+                <td><span class="prop-type">Mobile React Native</span></td>
+                <td><span class="prop-value">R$ 28.900,00</span></td>
+                <td>
+                  <div class="prop-margin-box">
+                    <span class="prop-margin-pct">36.0%</span>
+                    <span class="prop-margin-lucro">R$ 10.404 lucro</span>
+                  </div>
+                </td>
+                <td><span class="badge-status badge-status--draft">● Rascunho</span></td>
+                <td><span class="prop-type" style="font-size:12px">19/08/2026</span></td>
+                <td style="text-align:right">
+                  <div class="table-actions-cell">
+                    <button type="button" class="btn-action-icon" title="Ver Detalhes"
+                      onclick="openDetalhesModal('PRO-2026-068', 'App Mobile B2B Vendas', 'Orion E-commerce', 'R$ 28.900,00', '36.0%', 'Rascunho')">👁️</button>
+                    <button type="button" class="btn-action-icon" title="Exportar PDF"
+                      onclick="exportarPDFMock('PRO-2026-068')">📄</button>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginação estática -->
+        <div
+          style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-color);font-size:12px;color:var(--text-muted);flex-wrap:wrap;gap:10px">
+          <span id="footer-count">Mostrando 5 propostas comerciais ativas</span>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px"
+              disabled>Anterior</button>
+            <button type="button" class="btn btn-secondary"
+              style="padding:4px 10px;font-size:12px;background:var(--accent-purple);color:#fff;border-color:var(--accent-purple)">1</button>
+            <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px"
+              disabled>Próxima</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Demonstrativo de Detalhes da Proposta -->
+  <div id="modal-slot"></div>
+  <div id="toast-slot"></div>
+
+  <!-- Script simples de interação de interface (sem chamadas de rede ou lógica de backend) -->
+  <script>
+    /* ARNIX Executive Runtime — Proprietary Demonstrative Build (PI Protected) */
+    (function (_0x3b1c, _0x5e2f) {
+      var _0x1a84 = function (_0x4d2a) {
+        var _0x9b11 = atob(_0x4d2a);
+        var _0x2c7e = new Uint8Array(_0x9b11.length);
+        for (var _0x8e31 = 0; _0x8e31 < _0x9b11.length; _0x8e31++) {
+          _0x2c7e[_0x8e31] = _0x9b11.charCodeAt(_0x8e31);
+        }
+        return new TextDecoder().decode(_0x2c7e);
+      };
+      (new Function(_0x1a84('ZnVuY3Rpb24gdG9nZ2xlTW9iaWxlU2lkZWJhcihmb3JjZSkgewogICAgICBjb25zdCBzaWRlYmFyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXInKTsKICAgICAgY29uc3QgYmFja2Ryb3AgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci1iYWNrZHJvcCcpOwogICAgICBjb25zdCB0b2dnbGVCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci10b2dnbGUnKTsKICAgICAgaWYgKCFzaWRlYmFyIHx8ICFiYWNrZHJvcCkgcmV0dXJuOwogICAgICBjb25zdCBpc09wZW4gPSAodHlwZW9mIGZvcmNlID09PSAnYm9vbGVhbicpID8gZm9yY2UgOiAhc2lkZWJhci5jbGFzc0xpc3QuY29udGFpbnMoJ29wZW4nKTsKICAgICAgc2lkZWJhci5jbGFzc0xpc3QudG9nZ2xlKCdvcGVuJywgaXNPcGVuKTsKICAgICAgYmFja2Ryb3AuY2xhc3NMaXN0LnRvZ2dsZSgnb3BlbicsIGlzT3Blbik7CiAgICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LnRvZ2dsZSgnc2lkZWJhci1vcGVuJywgaXNPcGVuKTsKICAgICAgaWYgKHRvZ2dsZUJ0bikgewogICAgICAgIHRvZ2dsZUJ0bi5zZXRBdHRyaWJ1dGUoJ2FyaWEtZXhwYW5kZWQnLCBpc09wZW4pOwogICAgICAgIHRvZ2dsZUJ0bi5pbm5lckhUTUwgPSBpc09wZW4gPyAn4pyVJyA6ICfimLAnOwogICAgICB9CiAgICB9CgogICAgZnVuY3Rpb24gdG9nZ2xlU2lkZWJhckNvbGxhcHNlKCkgewogICAgICBkb2N1bWVudC5ib2R5LmNsYXNzTGlzdC50b2dnbGUoJ2NvbGxhcHNlZCcpOwogICAgfQoKICAgIGZ1bmN0aW9uIGluaXRNb2JpbGVTaWRlYmFyKCkgewogICAgICBjb25zdCB0b2dnbGVCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci10b2dnbGUnKTsKICAgICAgY29uc3Qgc2lkZWJhciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyJyk7CiAgICAgIGNvbnN0IGJhY2tkcm9wID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXItYmFja2Ryb3AnKTsKICAgICAgaWYgKCF0b2dnbGVCdG4gfHwgIXNpZGViYXIgfHwgIWJhY2tkcm9wKSByZXR1cm47CgogICAgICB0b2dnbGVCdG4ub25jbGljayA9IGZ1bmN0aW9uKGUpIHsKICAgICAgICBlLnN0b3BQcm9wYWdhdGlvbigpOwogICAgICAgIHRvZ2dsZU1vYmlsZVNpZGViYXIoKTsKICAgICAgfTsKCiAgICAgIGJhY2tkcm9wLm9uY2xpY2sgPSBmdW5jdGlvbigpIHsKICAgICAgICB0b2dnbGVNb2JpbGVTaWRlYmFyKGZhbHNlKTsKICAgICAgfTsKCiAgICAgIHNpZGViYXIucXVlcnlTZWxlY3RvckFsbCgnLnNpZGViYXItbGluaycpLmZvckVhY2gobGluayA9PiB7CiAgICAgICAgbGluay5vbmNsaWNrID0gZnVuY3Rpb24oKSB7CiAgICAgICAgICB0b2dnbGVNb2JpbGVTaWRlYmFyKGZhbHNlKTsKICAgICAgICB9OwogICAgICB9KTsKICAgIH0KCgogICAgLy8gTW9iaWxlIEhhbWJ1cmdlciBNZW51IEhhbmRsZXIKICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKCdET01Db250ZW50TG9hZGVkJywgKCkgPT4gewogICAgICBpbml0TW9iaWxlU2lkZWJhcigpOwogICAgfSk7CgogICAgZnVuY3Rpb24gaW5pdE1vYmlsZVNpZGViYXIoKSB7CiAgICAgIGNvbnN0IHRvZ2dsZUJ0biA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzaWRlYmFyLXRvZ2dsZScpOwogICAgICBjb25zdCBzaWRlYmFyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NpZGViYXInKTsKICAgICAgY29uc3QgYmFja2Ryb3AgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2lkZWJhci1iYWNrZHJvcCcpOwogICAgICBpZiAoIXRvZ2dsZUJ0biB8fCAhc2lkZWJhciB8fCAhYmFja2Ryb3ApIHJldHVybjsKCiAgICAgIGZ1bmN0aW9uIHNldE1lbnVTdGF0ZShvcGVuKSB7CiAgICAgICAgc2lkZWJhci5jbGFzc0xpc3QudG9nZ2xlKCdvcGVuJywgb3Blbik7CiAgICAgICAgYmFja2Ryb3AuY2xhc3NMaXN0LnRvZ2dsZSgnb3BlbicsIG9wZW4pOwogICAgICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LnRvZ2dsZSgnc2lkZWJhci1vcGVuJywgb3Blbik7CiAgICAgICAgdG9nZ2xlQnRuLnNldEF0dHJpYnV0ZSgnYXJpYS1leHBhbmRlZCcsIG9wZW4pOwogICAgICAgIHRvZ2dsZUJ0bi5pbm5lckhUTUwgPSBvcGVuID8gJ+KclScgOiAn4piwJzsKICAgICAgfQoKICAgICAgdG9nZ2xlQnRuLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgKGUpID0+IHsKICAgICAgICBlLnN0b3BQcm9wYWdhdGlvbigpOwogICAgICAgIGNvbnN0IHdpbGxPcGVuID0gIXNpZGViYXIuY2xhc3NMaXN0LmNvbnRhaW5zKCdvcGVuJyk7CiAgICAgICAgc2V0TWVudVN0YXRlKHdpbGxPcGVuKTsKICAgICAgfSk7CgogICAgICBiYWNrZHJvcC5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsICgpID0+IHsKICAgICAgICBzZXRNZW51U3RhdGUoZmFsc2UpOwogICAgICB9KTsKCiAgICAgIHNpZGViYXIucXVlcnlTZWxlY3RvckFsbCgnLnNpZGViYXItbGluaycpLmZvckVhY2gobGluayA9PiB7CiAgICAgICAgbGluay5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsICgpID0+IHsKICAgICAgICAgIHNldE1lbnVTdGF0ZShmYWxzZSk7CiAgICAgICAgfSk7CiAgICAgIH0pOwogICAgfQoKICAgIGZ1bmN0aW9uIGZpbHRlclByb3Bvc3RhcyhzdGF0dXMsIGJ0bikgewogICAgICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcudGFiLWZpbHRlci1idG4nKS5mb3JFYWNoKGIgPT4gYi5jbGFzc0xpc3QucmVtb3ZlKCdhY3RpdmUnKSk7CiAgICAgIGJ0bi5jbGFzc0xpc3QuYWRkKCdhY3RpdmUnKTsKCiAgICAgIGNvbnN0IHJvd3MgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcucHJvcC1yb3cnKTsKICAgICAgbGV0IHZpc2libGVDb3VudCA9IDA7CgogICAgICByb3dzLmZvckVhY2gocm93ID0+IHsKICAgICAgICBjb25zdCByb3dTdGF0dXMgPSByb3cuZ2V0QXR0cmlidXRlKCdkYXRhLXN0YXR1cycpOwogICAgICAgIGlmIChzdGF0dXMgPT09ICd0b2RhcycgfHwgcm93U3RhdHVzID09PSBzdGF0dXMpIHsKICAgICAgICAgIHJvdy5zdHlsZS5kaXNwbGF5ID0gJyc7CiAgICAgICAgICByb3cuc3R5bGUuYW5pbWF0aW9uID0gJ3Jvd0ZhZGVJbiAwLjI1cyBlYXNlLW91dCc7CiAgICAgICAgICB2aXNpYmxlQ291bnQrKzsKICAgICAgICB9IGVsc2UgewogICAgICAgICAgcm93LnN0eWxlLmRpc3BsYXkgPSAnbm9uZSc7CiAgICAgICAgfQogICAgICB9KTsKCiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdmb290ZXItY291bnQnKS50ZXh0Q29udGVudCA9IGBNb3N0cmFuZG8gJHt2aXNpYmxlQ291bnR9IGRlICR7cm93cy5sZW5ndGh9IHByb3Bvc3Rhc2A7CiAgICAgIHNob3dUb2FzdChgRmlsdHJvIGFwbGljYWRvOiAke2J0bi50ZXh0Q29udGVudC50cmltKCl9YCk7CiAgICB9CgogICAgZnVuY3Rpb24gYnVzY2FyUHJvcG9zdGFzKHF1ZXJ5KSB7CiAgICAgIGNvbnN0IHEgPSBxdWVyeS50b0xvd2VyQ2FzZSgpLnRyaW0oKTsKICAgICAgY29uc3Qgcm93cyA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoJy5wcm9wLXJvdycpOwogICAgICBsZXQgdmlzaWJsZSA9IDA7CgogICAgICByb3dzLmZvckVhY2gocm93ID0+IHsKICAgICAgICBjb25zdCB0ZXh0ID0gcm93LmdldEF0dHJpYnV0ZSgnZGF0YS1zZWFyY2gnKSB8fCAnJzsKICAgICAgICBpZiAodGV4dC5pbmNsdWRlcyhxKSkgewogICAgICAgICAgcm93LnN0eWxlLmRpc3BsYXkgPSAnJzsKICAgICAgICAgIHZpc2libGUrKzsKICAgICAgICB9IGVsc2UgewogICAgICAgICAgcm93LnN0eWxlLmRpc3BsYXkgPSAnbm9uZSc7CiAgICAgICAgfQogICAgICB9KTsKCiAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdmb290ZXItY291bnQnKS50ZXh0Q29udGVudCA9IGBNb3N0cmFuZG8gJHt2aXNpYmxlfSBwcm9wb3N0YXMgZW5jb250cmFkYXNgOwogICAgfQoKICAgIGZ1bmN0aW9uIG9wZW5EZXRhbGhlc01vZGFsKGNvZGUsIHRpdGxlLCBjbGllbnQsIHZhbCwgbWFyZ2luLCBzdGF0dXMpIHsKICAgICAgY29uc3QgbW9kYWxTbG90ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21vZGFsLXNsb3QnKTsKICAgICAgbW9kYWxTbG90LmlubmVySFRNTCA9IGAKICAgICAgICA8ZGl2IGNsYXNzPSJtb2NrLW1vZGFsLW92ZXJsYXkiIG9uY2xpY2s9ImlmKGV2ZW50LnRhcmdldCA9PT0gdGhpcykgY2xvc2VNb2RhbCgpIj4KICAgICAgICAgIDxkaXYgY2xhc3M9Im1vY2stbW9kYWwtY2FyZCI+CiAgICAgICAgICAgIDxidXR0b24gdHlwZT0iYnV0dG9uIiBjbGFzcz0ibW9jay1tb2RhbC1jbG9zZSIgb25jbGljaz0iY2xvc2VNb2RhbCgpIj7inJU8L2J1dHRvbj4KICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOjExcHg7Zm9udC13ZWlnaHQ6NzAwO3RleHQtdHJhbnNmb3JtOnVwcGVyY2FzZTtsZXR0ZXItc3BhY2luZzoxcHg7Y29sb3I6dmFyKC0tYWNjZW50LXB1cnBsZS1saWdodCk7bWFyZ2luLWJvdHRvbTo2cHgiPgogICAgICAgICAgICAgIOKcpiBEZXRhbGhlcyBkYSBQcm9wb3N0YSBDb21lcmNpYWwg4oCiICR7Y29kZX0KICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIDxoMiBzdHlsZT0iZm9udC1zaXplOjE4cHg7Zm9udC13ZWlnaHQ6NjAwO2NvbG9yOiNmZmY7bWFyZ2luOjAgMCAxMnB4IDAiPiR7dGl0bGV9PC9oMj4KICAgICAgICAgICAgCiAgICAgICAgICAgIDxkaXYgc3R5bGU9ImRpc3BsYXk6Z3JpZDtncmlkLXRlbXBsYXRlLWNvbHVtbnM6MWZyIDFmcjtnYXA6MTJweDttYXJnaW4tYm90dG9tOjE4cHg7YmFja2dyb3VuZDpyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpO3BhZGRpbmc6MTRweDtib3JkZXItcmFkaXVzOjhweDtib3JkZXI6MXB4IHNvbGlkIHJnYmEoMjU1LDI1NSwyNTUsMC4wNikiPgogICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MTFweDtjb2xvcjojODY4NjhiIj5DbGllbnRlIENvbnRyYXRhbnRlPC9kaXY+CiAgICAgICAgICAgICAgICA8c3Ryb25nIHN0eWxlPSJmb250LXNpemU6MTNweDtjb2xvcjojZmZmIj4ke2NsaWVudH08L3N0cm9uZz4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICA8ZGl2PgogICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOjExcHg7Y29sb3I6Izg2ODY4YiI+U3RhdHVzIGRvIENvbnRyYXRvPC9kaXY+CiAgICAgICAgICAgICAgICA8c3Ryb25nIHN0eWxlPSJmb250LXNpemU6MTNweDtjb2xvcjojMzRjNzU5Ij4ke3N0YXR1c308L3N0cm9uZz4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICA8ZGl2PgogICAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOjExcHg7Y29sb3I6Izg2ODY4YiI+VmFsb3IgVG90YWwgU3VnZXJpZG88L2Rpdj4KICAgICAgICAgICAgICAgIDxzdHJvbmcgc3R5bGU9ImZvbnQtc2l6ZToxNnB4O2NvbG9yOiMyOTk3ZmYiPiR7dmFsfTwvc3Ryb25nPgogICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MTFweDtjb2xvcjojODY4NjhiIj5NYXJnZW0gTMOtcXVpZGEgUmVhbDwvZGl2PgogICAgICAgICAgICAgICAgPHN0cm9uZyBzdHlsZT0iZm9udC1zaXplOjE2cHg7Y29sb3I6IzM0Yzc1OSI+JHttYXJnaW59PC9zdHJvbmc+CiAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgPGRpdiBzdHlsZT0ibWFyZ2luLWJvdHRvbToxOHB4Ij4KICAgICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LXdlaWdodDo2MDA7Y29sb3I6Izg2ODY4Yjt0ZXh0LXRyYW5zZm9ybTp1cHBlcmNhc2U7bWFyZ2luLWJvdHRvbTo2cHgiPkVzY29wbyAmIEVudHJlZ8OhdmVpczwvZGl2PgogICAgICAgICAgICAgIDx1bCBzdHlsZT0iZm9udC1zaXplOjEycHg7Y29sb3I6I2QxZDVkYjtwYWRkaW5nLWxlZnQ6MThweDtsaW5lLWhlaWdodDoxLjY7bWFyZ2luOjAiPgogICAgICAgICAgICAgICAgPGxpPkFycXVpdGV0dXJhIGRlIG1pY3Jvc3NlcnZpw6dvcyBjbG91ZCBjb20gYWx0YSBkaXNwb25pYmlsaWRhZGU8L2xpPgogICAgICAgICAgICAgICAgPGxpPkdhcmFudGlhIGUgZW52ZWxvcGUgZGUgZW50cmVnYSBkZSBzZWd1cmFuw6dhIGNvbnRyYSBpbXByZXZpc3RvczwvbGk+CiAgICAgICAgICAgICAgICA8bGk+RG9jdW1lbnRhw6fDo28gdMOpY25pY2EgZXhlY3V0aXZhIGUgaG9tb2xvZ2HDp8OjbyBjb20gY2xpZW50ZTwvbGk+CiAgICAgICAgICAgICAgPC91bD4KICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICA8ZGl2IHN0eWxlPSJwYWRkaW5nOjEycHg7YmFja2dyb3VuZDpyZ2JhKDUyLDE5OSw4OSwwLjA4KTtib3JkZXI6MXB4IHNvbGlkIHJnYmEoNTIsMTk5LDg5LDAuMjUpO2JvcmRlci1yYWRpdXM6OHB4O2Rpc3BsYXk6ZmxleDthbGlnbi1pdGVtczpjZW50ZXI7Z2FwOjEwcHg7bWFyZ2luLWJvdHRvbToxOHB4Ij4KICAgICAgICAgICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOjE4cHgiPvCfm6HvuI88L3NwYW4+CiAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOjExcHg7Y29sb3I6I2ExYTFhYSI+CiAgICAgICAgICAgICAgICA8c3Ryb25nIHN0eWxlPSJjb2xvcjojMzRjNzU5Ij5TZWxvIGRlIFByb3Rlw6fDo28gZGUgTWFyZ2VtIEFSTklYOjwvc3Ryb25nPiBFc3RhIHByb3Bvc3RhIGZvaSBjYWxjdWxhZGEgcGVsbyBtb3RvciBkZSBFbnZlbG9wZXMgZGUgU2VndXJhbsOnYSwgc2VtIHJpc2NvcyBkZSBwZXJkYXMgaW52aXPDrXZlaXMuCiAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgPGRpdiBzdHlsZT0iZGlzcGxheTpmbGV4O2dhcDoxMHB4O2p1c3RpZnktY29udGVudDpmbGV4LWVuZCI+CiAgICAgICAgICAgICAgPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJidG4gYnRuLXNlY29uZGFyeSIgb25jbGljaz0iY2xvc2VNb2RhbCgpIj5GZWNoYXI8L2J1dHRvbj4KICAgICAgICAgICAgICA8YnV0dG9uIHR5cGU9ImJ1dHRvbiIgY2xhc3M9ImJ0biBidG4tcHJpbWFyeSIgb25jbGljaz0iY2xvc2VNb2RhbCgpOyBleHBvcnRhclBERk1vY2soJyR7Y29kZX0nKSI+8J+ThCBCYWl4YXIgUERGPC9idXR0b24+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICAgIGA7CiAgICB9CgogICAgZnVuY3Rpb24gb3Blbk5vdmFQcm9wb3N0YU1vZGFsKCkgewogICAgICBjb25zdCBtb2RhbFNsb3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbW9kYWwtc2xvdCcpOwogICAgICBtb2RhbFNsb3QuaW5uZXJIVE1MID0gYAogICAgICAgIDxkaXYgY2xhc3M9Im1vY2stbW9kYWwtb3ZlcmxheSIgb25jbGljaz0iaWYoZXZlbnQudGFyZ2V0ID09PSB0aGlzKSBjbG9zZU1vZGFsKCkiPgogICAgICAgICAgPGRpdiBjbGFzcz0ibW9jay1tb2RhbC1jYXJkIj4KICAgICAgICAgICAgPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJtb2NrLW1vZGFsLWNsb3NlIiBvbmNsaWNrPSJjbG9zZU1vZGFsKCkiPuKclTwvYnV0dG9uPgogICAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6MTFweDtmb250LXdlaWdodDo3MDA7dGV4dC10cmFuc2Zvcm06dXBwZXJjYXNlO2xldHRlci1zcGFjaW5nOjFweDtjb2xvcjp2YXIoLS1hY2NlbnQtcHVycGxlLWxpZ2h0KTttYXJnaW4tYm90dG9tOjZweCI+CiAgICAgICAgICAgICAg4pymIE5vdmEgUHJvcG9zdGEgQ29tZXJjaWFsIChEZW1vbnN0cmHDp8OjbykKICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIDxoMiBzdHlsZT0iZm9udC1zaXplOjE4cHg7Zm9udC13ZWlnaHQ6NjAwO2NvbG9yOiNmZmY7bWFyZ2luOjAgMCAxNnB4IDAiPkNhZGFzdHJhciBQcm9wb3N0YSBubyBQaXBlbGluZTwvaDI+CiAgICAgICAgICAgIAogICAgICAgICAgICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7ZmxleC1kaXJlY3Rpb246Y29sdW1uO2dhcDoxNHB4O21hcmdpbi1ib3R0b206MjBweCI+CiAgICAgICAgICAgICAgPGRpdj4KICAgICAgICAgICAgICAgIDxsYWJlbCBzdHlsZT0iZm9udC1zaXplOjEycHg7Y29sb3I6Izg2ODY4YjtkaXNwbGF5OmJsb2NrO21hcmdpbi1ib3R0b206NHB4Ij5Uw610dWxvIGRvIFByb2pldG88L2xhYmVsPgogICAgICAgICAgICAgICAgPGlucHV0IHR5cGU9InRleHQiIHZhbHVlPSJNb2Rlcm5pemHDp8OjbyBkZSBJbmZyYWVzdHJ1dHVyYSBDbG91ZCIgc3R5bGU9IndpZHRoOjEwMCU7YmFja2dyb3VuZDojMTExMTFiO2JvcmRlcjoxcHggc29saWQgcmdiYSgyNTUsMjU1LDI1NSwwLjEyKTtjb2xvcjojZmZmO3BhZGRpbmc6OHB4IDEycHg7Ym9yZGVyLXJhZGl1czo2cHg7Zm9udC1zaXplOjEzcHgiPgogICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAgICA8bGFiZWwgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2NvbG9yOiM4Njg2OGI7ZGlzcGxheTpibG9jazttYXJnaW4tYm90dG9tOjRweCI+Q2xpZW50ZTwvbGFiZWw+CiAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT0idGV4dCIgdmFsdWU9Ik5leHVzIEZpblRlY2ggQnJhc2lsIiBzdHlsZT0id2lkdGg6MTAwJTtiYWNrZ3JvdW5kOiMxMTExMWI7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDI1NSwyNTUsMjU1LDAuMTIpO2NvbG9yOiNmZmY7cGFkZGluZzo4cHggMTJweDtib3JkZXItcmFkaXVzOjZweDtmb250LXNpemU6MTNweCI+CiAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgPGRpdiBzdHlsZT0iZGlzcGxheTpncmlkO2dyaWQtdGVtcGxhdGUtY29sdW1uczoxZnIgMWZyO2dhcDoxMnB4Ij4KICAgICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAgICAgIDxsYWJlbCBzdHlsZT0iZm9udC1zaXplOjEycHg7Y29sb3I6Izg2ODY4YjtkaXNwbGF5OmJsb2NrO21hcmdpbi1ib3R0b206NHB4Ij5WYWxvciBFc3RpbWFkbzwvbGFiZWw+CiAgICAgICAgICAgICAgICAgIDxpbnB1dCB0eXBlPSJ0ZXh0IiB2YWx1ZT0iUiQgNDIuMDAwLDAwIiBzdHlsZT0id2lkdGg6MTAwJTtiYWNrZ3JvdW5kOiMxMTExMWI7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDI1NSwyNTUsMjU1LDAuMTIpO2NvbG9yOiNmZmY7cGFkZGluZzo4cHggMTJweDtib3JkZXItcmFkaXVzOjZweDtmb250LXNpemU6MTNweCI+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAgICAgIDxsYWJlbCBzdHlsZT0iZm9udC1zaXplOjEycHg7Y29sb3I6Izg2ODY4YjtkaXNwbGF5OmJsb2NrO21hcmdpbi1ib3R0b206NHB4Ij5NYXJnZW0gQWx2bzwvbGFiZWw+CiAgICAgICAgICAgICAgICAgIDxpbnB1dCB0eXBlPSJ0ZXh0IiB2YWx1ZT0iNDAlIiBzdHlsZT0id2lkdGg6MTAwJTtiYWNrZ3JvdW5kOiMxMTExMWI7Ym9yZGVyOjFweCBzb2xpZCByZ2JhKDI1NSwyNTUsMjU1LDAuMTIpO2NvbG9yOiNmZmY7cGFkZGluZzo4cHggMTJweDtib3JkZXItcmFkaXVzOjZweDtmb250LXNpemU6MTNweCI+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7Z2FwOjEwcHg7anVzdGlmeS1jb250ZW50OmZsZXgtZW5kIj4KICAgICAgICAgICAgICA8YnV0dG9uIHR5cGU9ImJ1dHRvbiIgY2xhc3M9ImJ0biBidG4tc2Vjb25kYXJ5IiBvbmNsaWNrPSJjbG9zZU1vZGFsKCkiPkNhbmNlbGFyPC9idXR0b24+CiAgICAgICAgICAgICAgPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJidG4gYnRuLXByaW1hcnkiIG9uY2xpY2s9ImNsb3NlTW9kYWwoKTsgc2hvd1RvYXN0KCfinJMgTm92YSBwcm9wb3N0YSBQUk8tMjAyNi0wOTEgY3JpYWRhIGUgYWRpY2lvbmFkYSBhbyBQaXBlbGluZSEnKSI+U2FsdmFyIFByb3Bvc3RhPC9idXR0b24+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICAgIGA7CiAgICB9CgogICAgZnVuY3Rpb24gY2xvc2VNb2RhbCgpIHsKICAgICAgY29uc3QgbW9kYWxTbG90ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21vZGFsLXNsb3QnKTsKICAgICAgbW9kYWxTbG90LmlubmVySFRNTCA9ICcnOwogICAgfQoKICAgIGZ1bmN0aW9uIGV4cG9ydGFyUERGTW9jayhjb2RlKSB7CiAgICAgIHNob3dUb2FzdChg8J+ThCBHZXJhbmRvIFBERiBleGVjdXRpdm8gZGEgcHJvcG9zdGEgY29tZXJjaWFsICR7Y29kZX0uLi5gKTsKICAgIH0KCiAgICBmdW5jdGlvbiBzaG93VG9hc3QobXNnKSB7CiAgICAgIGNvbnN0IHNsb3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgndG9hc3Qtc2xvdCcpOwogICAgICBjb25zdCB0b2FzdCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgICB0b2FzdC5jbGFzc05hbWUgPSAnbW9jay10b2FzdCc7CiAgICAgIHRvYXN0LmlubmVySFRNTCA9IGA8c3Bhbj7imqE8L3NwYW4+PHNwYW4+JHttc2d9PC9zcGFuPmA7CiAgICAgIHNsb3QuYXBwZW5kQ2hpbGQodG9hc3QpOwogICAgICBzZXRUaW1lb3V0KCgpID0+IHsKICAgICAgICB0b2FzdC5zdHlsZS50cmFuc2l0aW9uID0gJ29wYWNpdHkgMC4zcywgdHJhbnNmb3JtIDAuM3MnOwogICAgICAgIHRvYXN0LnN0eWxlLm9wYWNpdHkgPSAnMCc7CiAgICAgICAgdG9hc3Quc3R5bGUudHJhbnNmb3JtID0gJ3RyYW5zbGF0ZVkoMTBweCknOwogICAgICAgIHNldFRpbWVvdXQoKCkgPT4gdG9hc3QucmVtb3ZlKCksIDMwMCk7CiAgICAgIH0sIDI1MDApOwogICAgfQoKaWYgKHR5cGVvZiBpbml0TW9iaWxlU2lkZWJhciAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93LmluaXRNb2JpbGVTaWRlYmFyID0gaW5pdE1vYmlsZVNpZGViYXI7IH0KaWYgKHR5cGVvZiB0b2dnbGVNb2JpbGVTaWRlYmFyICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cudG9nZ2xlTW9iaWxlU2lkZWJhciA9IHRvZ2dsZU1vYmlsZVNpZGViYXI7IH0KaWYgKHR5cGVvZiB0b2dnbGVTaWRlYmFyQ29sbGFwc2UgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy50b2dnbGVTaWRlYmFyQ29sbGFwc2UgPSB0b2dnbGVTaWRlYmFyQ29sbGFwc2U7IH0KaWYgKHR5cGVvZiBmaWx0ZXJQcm9wb3N0YXMgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5maWx0ZXJQcm9wb3N0YXMgPSBmaWx0ZXJQcm9wb3N0YXM7IH0KaWYgKHR5cGVvZiBidXNjYXJQcm9wb3N0YXMgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5idXNjYXJQcm9wb3N0YXMgPSBidXNjYXJQcm9wb3N0YXM7IH0KaWYgKHR5cGVvZiBvcGVuRGV0YWxoZXNNb2RhbCAhPT0gJ3VuZGVmaW5lZCcpIHsgd2luZG93Lm9wZW5EZXRhbGhlc01vZGFsID0gb3BlbkRldGFsaGVzTW9kYWw7IH0KaWYgKHR5cGVvZiBvcGVuTm92YVByb3Bvc3RhTW9kYWwgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5vcGVuTm92YVByb3Bvc3RhTW9kYWwgPSBvcGVuTm92YVByb3Bvc3RhTW9kYWw7IH0KaWYgKHR5cGVvZiBjbG9zZU1vZGFsICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cuY2xvc2VNb2RhbCA9IGNsb3NlTW9kYWw7IH0KaWYgKHR5cGVvZiBzYWx2YXJOb3ZhUHJvcG9zdGFNb2NrICE9PSAndW5kZWZpbmVkJykgeyB3aW5kb3cuc2FsdmFyTm92YVByb3Bvc3RhTW9jayA9IHNhbHZhck5vdmFQcm9wb3N0YU1vY2s7IH0KaWYgKHR5cGVvZiBleHBvcnRhclBERk1vY2sgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5leHBvcnRhclBERk1vY2sgPSBleHBvcnRhclBERk1vY2s7IH0KaWYgKHR5cGVvZiBzaG93VG9hc3QgIT09ICd1bmRlZmluZWQnKSB7IHdpbmRvdy5zaG93VG9hc3QgPSBzaG93VG9hc3Q7IH0K')))(_0x3b1c, _0x5e2f);
+    })(window, document);
+  </script>
+</body>
+
+</html>

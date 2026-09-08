@@ -1,0 +1,49 @@
+# ============================================================
+# ARNIX - Plataform PrecifiPro Admin Module — .gitignore
+# ============================================================
+
+# Node.js & Frontend Build
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+.next/
+out/
+
+# Vercel Deployment
+.vercel/
+.vercel
+
+# Python Cache & Ambientes Virtuais
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Segredos & Configurações Locais de Produção
+.env
+.env.local
+.env.*
+*.key
+*.pem
+
+# Logs & Tokens Temporários de Sessão
+*.log
+logs/
+*.token
+tokens.json
+
+# Banco de Dados & Caches Locais
+*.db
+*.sqlite
+*.sqlite3
+
+# Sistema Operacional & IDEs
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
