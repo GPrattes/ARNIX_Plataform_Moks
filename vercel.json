@@ -1,8 +1,14 @@
 {
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/web/$1"
+    }
+  ],
   "redirects": [
     {
       "source": "/",
-      "destination": "/web/lg.html",
+      "destination": "/lg",
       "permanent": false
     }
   ],
