@@ -43,6 +43,8 @@ Por ser um protótipo estático, **não há necessidade de servidor ou banco de 
 
 **João Paulo Calafate**  
 *Comercial e Marketing (Co-Founder)*
+- ✉️ **Email:** [joao@arnix.com.br](mailto:joao@arnix.com.br)
+- 💼 **LinkedIn:** [joão-paulo-calafate-benedito-33099823b](https://linkedin.com/in/joão-paulo-calafate-benedito-33099823b)
 
 ---
 *ARNIX Precific - O Futuro da Engenharia de Precificação.*
