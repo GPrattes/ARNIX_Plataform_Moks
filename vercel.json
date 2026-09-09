@@ -1,17 +1,16 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/web/$1"
-    }
+    { "source": "/index", "destination": "/web/index.html" },
+    { "source": "/clientes", "destination": "/web/clientes.html" },
+    { "source": "/propostas", "destination": "/web/propostas.html" },
+    { "source": "/calculadora", "destination": "/web/calculadora.html" },
+    { "source": "/lg", "destination": "/web/lg.html" },
+    { "source": "/ceo", "destination": "/web/ceo.html" },
+    { "source": "/sobre", "destination": "/web/sobre.html" }
   ],
   "redirects": [
-    {
-      "source": "/",
-      "destination": "/lg",
-      "permanent": false
-    }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+    { "source": "/", "destination": "/lg", "permanent": false }
+  ]
 }
