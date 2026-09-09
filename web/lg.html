@@ -1049,11 +1049,12 @@
                 submitBtn.classList.remove('loading');
                 submitBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                 submitBtn.querySelector('span').textContent = 'Welcome Back!';
+                
+                // Redireciona para o dashboard após mostrar a mensagem de sucesso
                 setTimeout(() => {
-                    submitBtn.style.background = '';
-                    submitBtn.querySelector('span').textContent = 'Sign In';
-                }, 2500);
-            }, 2000);
+                    window.location.href = 'index.html';
+                }, 800);
+            }, 1500);
         });
 
         // Social buttons
