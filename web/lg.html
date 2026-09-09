@@ -1027,22 +1027,10 @@
         // Submit
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            let valid = true;
-
-            if (!validateEmail(emailInput.value)) {
-                emailGroup.classList.add('error');
-                valid = false;
-            }
-            if (!validatePassword(passwordInput.value)) {
-                passwordGroup.classList.add('error');
-                valid = false;
-            }
-
-            if (!valid) {
-                loginCard.classList.add('shake');
-                setTimeout(() => loginCard.classList.remove('shake'), 500);
-                return;
-            }
+            
+            // Bypass da validação no modo Mock:
+            // Removemos a verificação de e-mail e senha para que o investidor 
+            // possa acessar apenas clicando em "Sign In" sem restrições de formato.
 
             submitBtn.classList.add('loading');
             setTimeout(() => {
@@ -1053,8 +1041,8 @@
                 // Redireciona para o dashboard após mostrar a mensagem de sucesso
                 setTimeout(() => {
                     window.location.href = 'index.html';
-                }, 800);
-            }, 1500);
+                }, 600);
+            }, 800);
         });
 
         // Social buttons
