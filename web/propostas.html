@@ -66,11 +66,23 @@
       animation: pageEnter 0.35s ease-out;
     }
 
-    /* ── Refinamento de Densidade Visual da Tabela ── */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+
     #tabela-propostas {
       width: 100%;
+      min-width: 1050px;
       border-collapse: collapse;
       text-align: left;
+    }
+
+    #tabela-propostas th,
+    #tabela-propostas td {
+      white-space: nowrap;
     }
 
     #tabela-propostas thead th {
@@ -531,20 +543,27 @@
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+      }
+    }
 
-      #tabela-propostas th:first-child,
-      #tabela-propostas td:first-child {
-        position: sticky;
-        left: 0;
-        background: #141419 !important;
-        z-index: 2;
-        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+    @media (max-width: 768px) {
+      .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
       }
 
-      #tabela-propostas thead th:first-child {
-        background: #1c1c22 !important;
-        z-index: 3;
+      #tabela-propostas {
+        min-width: 1050px !important;
       }
     }
 
@@ -554,12 +573,13 @@
       }
 
       .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
       }
 
       #tabela-propostas {
-        min-width: 680px;
+        min-width: 1000px !important;
       }
 
       .mock-modal-card {
@@ -750,8 +770,8 @@
 
       <!-- Tabela de propostas Responsiva -->
       <div class="card" style="padding:0;overflow:hidden">
-        <div class="table-container">
-          <table style="width:100%;border-collapse:collapse;text-align:left;font-size:13px" id="tabela-propostas">
+        <div class="table-container" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%">
+          <table style="width:100%;min-width:1050px;border-collapse:collapse;text-align:left;font-size:13px" id="tabela-propostas">
             <thead>
               <tr
                 style="border-bottom:1px solid var(--border-color);background:var(--bg-tertiary);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.8px">
