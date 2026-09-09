@@ -1,7 +1,15 @@
 {
-  "cleanUrls": true,
+  "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/index.html", "destination": "/web/index.html" },
+    { "source": "/clientes.html", "destination": "/web/clientes.html" },
+    { "source": "/propostas.html", "destination": "/web/propostas.html" },
+    { "source": "/calculadora.html", "destination": "/web/calculadora.html" },
+    { "source": "/lg.html", "destination": "/web/lg.html" },
+    { "source": "/ceo.html", "destination": "/web/ceo.html" },
+    { "source": "/sobre.html", "destination": "/web/sobre.html" },
+
     { "source": "/index", "destination": "/web/index.html" },
     { "source": "/clientes", "destination": "/web/clientes.html" },
     { "source": "/propostas", "destination": "/web/propostas.html" },
