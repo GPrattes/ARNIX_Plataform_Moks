@@ -1049,35 +1049,6 @@
       }
     }
 
-    const toggleBtn = document.getElementById('sidebar-toggle');
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('sidebar-backdrop');
-
-      if (toggleBtn) {
-        toggleBtn.removeAttribute('onclick');
-        toggleBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          toggleMobileSidebar();
-        });
-      }
-
-      if (backdrop) {
-        backdrop.removeAttribute('onclick');
-        backdrop.addEventListener('click', function(e) {
-          e.preventDefault();
-          toggleMobileSidebar(false);
-        });
-      }
-
-      if (sidebar) {
-        sidebar.querySelectorAll('.sidebar-link').forEach(link => {
-          link.addEventListener('click', function() {
-            toggleMobileSidebar(false);
-          });
-        });
-      }
-    }
 
     function initCharts() {
       const ctxReceita = document.getElementById('chartReceitaMock');
