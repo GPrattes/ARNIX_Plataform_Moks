@@ -33,5 +33,16 @@ Por ser um protótipo estático, **não há necessidade de servidor ou banco de 
 
 > **Nota:** Os botões e formulários nestas páginas contêm lógicas simuladas (mockadas) via JavaScript (presentes nos arquivos `.js` ou scripts no final das páginas). O botão de login em `lg.html`, por exemplo, contém um atalho (*Bypass*) para acessar o dashboard sem autenticação real.
 
+## 📞 Contato & Liderança
+
+**Gabriel Prattes**  
+*Engenharia e Desenvolvimento (Lead Dev & Co-Founder)*  
+- ✉️ **Email:** [gprattesceo@orbb.com.br](mailto:gprattesceo@orbb.com.br)
+- 💼 **LinkedIn:** [gabriel-prattes](https://linkedin.com/in/gabriel-prattes)
+- 💻 **GitHub:** [@GPrattes](https://github.com/GPrattes)
+
+**João Paulo Calafate**  
+*Comercial e Marketing (Co-Founder)*
+
 ---
 *ARNIX Precific - O Futuro da Engenharia de Precificação.*
